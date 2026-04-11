@@ -16,9 +16,17 @@ function renderDailyChart(records, selectedLob) {
   }
 
   // Kumpulkan semua tanggal yang ada
-  const allDates = [...new Set(
+  const rawDates = [...new Set(
     chartRows.flatMap(r => Object.keys(r.daily_sales || {}))
   )].sort();
+
+  // Filter hanya tanggal dari bulan yang sama dengan tanggal terbaru
+  // (agar kolom baseline MoM bulan lalu tidak ikut tampil)
+  let allDates = rawDates;
+  if (rawDates.length > 0) {
+    const latestMonth = rawDates[rawDates.length - 1].substring(0, 7); // "2026-04"
+    allDates = rawDates.filter(d => d.startsWith(latestMonth));
+  }
 
   if (allDates.length === 0) {
     document.getElementById('chart-daily').innerHTML =
@@ -32,13 +40,21 @@ function renderDailyChart(records, selectedLob) {
     return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
   });
 
-  // Buat series
+  // Helper format nilai ke Miliar/Juta
+  const fmtB = (v) => {
+    if (v == null) return '0';
+    if (v >= 1)    return v.toFixed(1) + 'B';
+    if (v >= 0.01) return (v * 1000).toFixed(0) + 'M';
+    return '0';
+  };
+
+  // Buat series (nilai dalam Miliar)
   const colors = ['#1E3A7A', '#F6B93B', '#00B894', '#FF4757', '#A29BFE', '#FD79A8'];
   const series = chartRows.map((r, i) => ({
     name: r.tsh_name || r.lob_name,
     data: allDates.map(d => {
       const v = r.daily_sales?.[d];
-      return v != null ? Math.round(v / 1_000_000 * 10) / 10 : 0;
+      return v != null ? Math.round(v / 1_000_000_000 * 1000) / 1000 : 0;
     })
   }));
 
@@ -80,7 +96,7 @@ function renderDailyChart(records, selectedLob) {
     yaxis: {
       labels: {
         style: { fontSize: '11px', colors: '#6B7A99', fontFamily: 'Inter, sans-serif' },
-        formatter: (v) => v + 'M',
+        formatter: (v) => fmtB(v),
       }
     },
     grid: {
@@ -90,7 +106,11 @@ function renderDailyChart(records, selectedLob) {
     },
     tooltip: {
       theme: 'light',
-      y: { formatter: (v) => v + ' Juta' },
+      y: { formatter: (v) => {
+        if (v >= 1)    return v.toFixed(2) + ' Miliar';
+        if (v >= 0.01) return (v * 1000).toFixed(0) + ' Juta';
+        return v.toFixed(3) + ' Miliar';
+      }},
       style: { fontSize: '12px', fontFamily: 'Inter, sans-serif' },
     },
     legend: {
