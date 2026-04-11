@@ -231,33 +231,91 @@ function mapColumns(headers) {
 
 function parseDateHeader(val) {
   if (!val) return null;
+
+  // Jika sudah berupa JS Date object (cellDates: true di SheetJS)
+  if (val instanceof Date && !isNaN(val.getTime())) {
+    const y = val.getFullYear(), m = val.getMonth() + 1, d = val.getDate();
+    if (y >= 2025 && y <= 2027) {
+      return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    }
+    return null;
+  }
+
   const s = String(val).trim();
 
   // Format ISO: "2026-04-01"
   if (s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
 
-  // Excel date serial number
-  if (!isNaN(s) && parseInt(s) > 40000 && parseInt(s) < 60000) {
-    try {
-      const d = XLSX.SSF.parse_date_code(parseInt(s));
-      if (d && d.y > 2020) return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
-    } catch(e) {}
+  // Excel date serial number (hanya integer murni, bukan angka kecil 1-31)
+  if (/^\d+$/.test(s)) {
+    const n = parseInt(s);
+    if (n > 40000 && n < 65000) {
+      try {
+        const d = XLSX.SSF.parse_date_code(n);
+        if (d && d.y >= 2025 && d.y <= 2027) {
+          return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+        }
+      } catch(e) {}
+    }
+    return null; // Angka kecil (1-31) bukan tanggal lengkap
   }
 
-  // Format JS Date object atau string tanggal
+  // Peta nama bulan (Inggris + Indonesia)
+  const monthMap = {
+    jan:1, feb:2, mar:3, apr:4, may:5, mei:5,
+    jun:6, jul:7, aug:8, agu:8,
+    sep:9, oct:10, okt:10, nov:11, dec:12, des:12
+  };
+
+  // Format "1-Apr", "1-Apr-26", "01-Apr-2026", "1 Apr", "1 Apr 2026"
+  const dmMon = s.match(/^(\d{1,2})[\s\-\/]([A-Za-z]{3})[\s\-\/]?(\d{2,4})?$/i);
+  if (dmMon) {
+    const day   = parseInt(dmMon[1]);
+    const month = monthMap[dmMon[2].toLowerCase()];
+    const rawY  = dmMon[3];
+    const year  = rawY ? (rawY.length === 2 ? 2000 + parseInt(rawY) : parseInt(rawY)) : new Date().getFullYear();
+    if (month && day >= 1 && day <= 31 && year >= 2025 && year <= 2027) {
+      return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+  }
+
+  // Format "Apr-1", "Apr 1", "Apr-01-2026", "Apr/1"
+  const monDm = s.match(/^([A-Za-z]{3})[\s\-\/](\d{1,2})[\s\-\/]?(\d{2,4})?$/i);
+  if (monDm) {
+    const month = monthMap[monDm[1].toLowerCase()];
+    const day   = parseInt(monDm[2]);
+    const rawY  = monDm[3];
+    const year  = rawY ? (rawY.length === 2 ? 2000 + parseInt(rawY) : parseInt(rawY)) : new Date().getFullYear();
+    if (month && day >= 1 && day <= 31 && year >= 2025 && year <= 2027) {
+      return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+  }
+
+  // Format D/M/YYYY atau M/D/YYYY
+  const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slash) {
+    const y = parseInt(slash[3]);
+    if (y >= 2025 && y <= 2027) {
+      return `${y}-${slash[1].padStart(2,'0')}-${slash[2].padStart(2,'0')}`;
+    }
+  }
+
+  // Format D-M-YYYY atau M-D-YYYY
+  const dash = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (dash) {
+    const y = parseInt(dash[3]);
+    if (y >= 2025 && y <= 2027) {
+      return `${y}-${dash[1].padStart(2,'0')}-${dash[2].padStart(2,'0')}`;
+    }
+  }
+
+  // Fallback: coba parse generic
   try {
     const dt = new Date(val);
     if (!isNaN(dt.getTime()) && dt.getFullYear() >= 2025 && dt.getFullYear() <= 2027) {
       return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
     }
   } catch(e) {}
-
-  // Format M/D/YYYY atau D/M/YYYY
-  const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (slash) {
-    const y = slash[3], a = slash[1].padStart(2,'0'), b = slash[2].padStart(2,'0');
-    if (parseInt(y) >= 2025) return `${y}-${a}-${b}`;
-  }
 
   return null;
 }
