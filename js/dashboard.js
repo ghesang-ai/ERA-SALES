@@ -10,41 +10,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Pastikan Supabase client sudah siap
   await new Promise(r => setTimeout(r, 100));
 
-  // Auth guard
-  const session = await requireAuth();
-  if (!session) return;
-
-  userProfile = await getCurrentUser();
-
-  // Jika belum ada profil → auto-create dari email, langsung masuk dashboard
-  if (!userProfile) {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    const emailName = user.email.split('@')[0].replace(/[._-]/g, ' ').toUpperCase();
-    const { error: insertErr } = await supabaseClient.from('user_profiles').insert({
-      id:        user.id,
-      email:     user.email,
-      full_name: emailName,
-      role:      'tsh',
-      lob_name:  null,
-      tsh_name:  null,
-    });
-    if (!insertErr) {
-      userProfile = await getCurrentUser();
-    }
-    // Jika insert gagal pun tetap lanjut dengan profil sementara
-    if (!userProfile) {
-      userProfile = {
-        ...user,
-        profile: { full_name: emailName, role: 'tsh', lob_name: null, tsh_name: null }
-      };
-    }
-  }
-
-  initLogout();
-  initProfileModal();
+  // Tidak perlu login — dashboard bisa diakses siapa saja
   initBottomNav();
   initDesktopNav();
-  renderUserHeader();
 
   await loadDashboardData();
 });
@@ -95,8 +63,7 @@ async function loadDashboardData() {
         day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
       });
 
-    // Filter records sesuai hak akses user
-    const visibleRecords = filterByRole(allRecords, userProfile.profile);
+    const visibleRecords = filterByRole(allRecords);
 
     showLoading(false);
     showNoData(false);
@@ -113,17 +80,8 @@ async function loadDashboardData() {
 }
 
 // ─── ROLE-BASED FILTER ───────────────────────────────────────
-function filterByRole(records, profile) {
-  if (!profile) return records;
-  if (profile.role === 'admin') return records;
-  if (profile.role === 'lob') {
-    // LOB lihat: baris dirinya + semua TSH di LOB-nya
-    return records.filter(r => r.lob_name === profile.lob_name);
-  }
-  if (profile.role === 'tsh') {
-    // TSH lihat: semua TSH + LOB dalam LOB yang sama (sesuai konfirmasi user)
-    return records.filter(r => r.lob_name === profile.lob_name);
-  }
+function filterByRole(records) {
+  // Semua data tampil tanpa filter — akses publik
   return records;
 }
 
@@ -151,7 +109,7 @@ function buildLobTabs(records) {
     btn.classList.add('active');
     activeLob = btn.dataset.lob;
 
-    const filtered = filterByRole(allRecords, userProfile?.profile);
+    const filtered = filterByRole(allRecords);
     renderDashboard(filtered, activeLob);
   });
 }
