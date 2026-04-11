@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1E3A7A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>ERA-SALES Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="app-body">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="header-logo">
+        <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="10" fill="#1E3A7A"/>
+          <path d="M12 34L20 22L26 28L32 18L36 22" stroke="#F6B93B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="36" cy="14" r="3" fill="#F6B93B"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-title">ERA-SALES</div>
+        <div class="header-subtitle" id="header-period">Region 5</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-user" id="header-user-info">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-name" id="user-name-display">...</div>
+      </div>
+      <button class="header-logout" id="logout-btn" title="Keluar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="app-main" id="app-main">
+
+    <!-- Loading State -->
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Memuat data...</p>
+    </div>
+
+    <!-- No Data State -->
+    <div id="no-data-state" class="empty-state hidden">
+      <div class="empty-icon">📊</div>
+      <h3>Data Belum Tersedia</h3>
+      <p>Belum ada data yang diupload. Hubungi admin untuk mengupload data terbaru.</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard-content" class="hidden">
+
+      <!-- Period Banner -->
+      <div class="period-banner">
+        <span class="period-icon">📅</span>
+        <span id="period-label">Memuat periode...</span>
+        <span class="period-badge" id="last-updated">—</span>
+      </div>
+
+      <!-- LOB Filter Tabs -->
+      <div class="tab-scroll-wrapper">
+        <div class="tab-bar" id="lob-tabs">
+          <button class="tab-btn active" data-lob="SEMUA">Semua</button>
+          <!-- LOB tabs akan diisi oleh JS -->
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">MTD Sales</div>
+          <div class="kpi-value" id="kpi-mtd">—</div>
+          <div class="kpi-sub" id="kpi-mtd-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Target April</div>
+          <div class="kpi-value" id="kpi-target">—</div>
+          <div class="kpi-sub" id="kpi-target-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">% Pencapaian</div>
+          <div class="kpi-value" id="kpi-ach">—</div>
+          <div class="kpi-sub" id="kpi-ach-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">YoY Growth</div>
+          <div class="kpi-value" id="kpi-yoy">—</div>
+          <div class="kpi-sub" id="kpi-yoy-sub">vs April 2025</div>
+        </div>
+      </div>
+
+      <!-- Daily Trend Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Trend Penjualan Harian</h3>
+          <span class="card-badge" id="chart-lob-label">Semua LOB</span>
+        </div>
+        <div id="chart-daily" style="min-height:220px;"></div>
+      </div>
+
+      <!-- TSH Ranking -->
+      <div class="card" id="ranking-card">
+        <div class="card-header">
+          <h3 class="card-title">Pencapaian per TSH</h3>
+          <span class="card-badge" id="ranking-lob-label">Semua LOB</span>
+        </div>
+        <div id="ranking-list"></div>
+      </div>
+
+      <!-- Detail Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Data Detail</h3>
+          <button class="icon-btn" id="toggle-table-btn" title="Tampilkan/Sembunyikan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
+        <div id="detail-table-wrapper" class="table-wrapper">
+          <table class="data-table" id="detail-table">
+            <thead>
+              <tr>
+                <th class="col-name">Nama</th>
+                <th class="col-num">Target</th>
+                <th class="col-num">MTD</th>
+                <th class="col-pct">%Ach</th>
+                <th class="col-num">Est</th>
+                <th class="col-pct">MoM</th>
+                <th class="col-pct">YoY</th>
+              </tr>
+            </thead>
+            <tbody id="detail-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Spacer for bottom nav -->
+      <div style="height:80px;"></div>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item active">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="#chart-daily" class="nav-item" id="nav-chart">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      <span>Grafik</span>
+    </a>
+    <a href="#ranking-card" class="nav-item" id="nav-team">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>Tim</span>
+    </a>
+    <a href="#" class="nav-item" id="nav-profile">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Profil</span>
+    </a>
+  </nav>
+
+  <!-- PROFILE MODAL -->
+  <div class="modal-overlay hidden" id="profile-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-body">
+        <div class="profile-avatar-lg" id="modal-avatar">?</div>
+        <div class="profile-name" id="modal-name">—</div>
+        <div class="profile-role-badge" id="modal-role">—</div>
+        <div class="profile-lob" id="modal-lob"></div>
+        <div class="modal-divider"></div>
+        <button class="btn btn-danger btn-full" id="modal-logout-btn">Keluar dari Akun</button>
+        <button class="btn btn-outline btn-full" id="modal-close-btn" style="margin-top:0.75rem;">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
