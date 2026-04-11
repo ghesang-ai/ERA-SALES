@@ -16,17 +16,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   userProfile = await getCurrentUser();
 
-  // Jika sudah login tapi belum ada profil → tampilkan pesan setup
+  // Jika belum ada profil → auto-create dari email, langsung masuk dashboard
   if (!userProfile) {
-    showLoading(false);
-    const noData = document.getElementById('no-data-state');
-    noData.classList.remove('hidden');
-    noData.innerHTML = `
-      <div class="empty-icon">⚙️</div>
-      <h3>Akun Belum Dikonfigurasi</h3>
-      <p>Anda sudah login, tapi profil belum dibuat.<br>Hubungi admin atau ikuti panduan setup.</p>
-    `;
-    return;
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const emailName = user.email.split('@')[0].replace(/[._-]/g, ' ').toUpperCase();
+    const { error: insertErr } = await supabaseClient.from('user_profiles').insert({
+      id:        user.id,
+      email:     user.email,
+      full_name: emailName,
+      role:      'tsh',
+      lob_name:  null,
+      tsh_name:  null,
+    });
+    if (!insertErr) {
+      userProfile = await getCurrentUser();
+    }
+    // Jika insert gagal pun tetap lanjut dengan profil sementara
+    if (!userProfile) {
+      userProfile = {
+        ...user,
+        profile: { full_name: emailName, role: 'tsh', lob_name: null, tsh_name: null }
+      };
+    }
   }
 
   initLogout();
