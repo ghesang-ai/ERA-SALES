@@ -116,10 +116,16 @@ function renderDailyChart(records, selectedLob) {
     legend: {
       show: chartRows.length > 1,
       position: 'bottom',
-      fontSize: '12px',
+      horizontalAlign: 'center',
+      fontSize: '11px',
       fontFamily: 'Inter, sans-serif',
-      markers: { radius: 4 },
-      itemMargin: { horizontal: 8, vertical: 4 },
+      markers: { radius: 3, width: 10, height: 10 },
+      itemMargin: { horizontal: 14, vertical: 6 },
+      // Singkat nama panjang: tampilkan maks 2 kata
+      formatter: (name) => {
+        const words = name.trim().split(/\s+/);
+        return words.length <= 2 ? name : words.slice(0, 2).join(' ');
+      },
     },
     markers: {
       size: selectedLob === 'SEMUA' ? 0 : 4,
@@ -127,10 +133,34 @@ function renderDailyChart(records, selectedLob) {
     },
     responsive: [
       {
+        // Desktop: tinggi lebih besar, legend lebih rapi
+        breakpoint: 9999,
+        options: {
+          chart: { height: 300 },
+          legend: {
+            fontSize: '11px',
+            itemMargin: { horizontal: 20, vertical: 8 },
+          },
+        }
+      },
+      {
+        breakpoint: 900,
+        options: {
+          chart: { height: 260 },
+          legend: {
+            fontSize: '11px',
+            itemMargin: { horizontal: 12, vertical: 6 },
+          },
+        }
+      },
+      {
         breakpoint: 600,
         options: {
-          chart: { height: 200 },
-          legend: { fontSize: '10px' },
+          chart: { height: 220 },
+          legend: {
+            fontSize: '10px',
+            itemMargin: { horizontal: 8, vertical: 4 },
+          },
           xaxis: { labels: { style: { fontSize: '10px' } } },
         }
       }
