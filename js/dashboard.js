@@ -135,6 +135,12 @@ function renderDashboard(records, selectedLob) {
     selectedLob === 'SEMUA' ? 'Semua LOB' : selectedLob;
 
   renderDailyChart(viewRecords, selectedLob);
+
+  // Channel / Brand / VAS selalu tampil data region (tidak difilter LOB)
+  renderSectionList('CHANNEL', 'channel-list');
+  renderSectionList('BRAND',   'brand-list');
+  renderSectionList('VAS',     'vas-list');
+
   initTableToggle();
 }
 
@@ -294,6 +300,57 @@ function renderDetailTable(records, selectedLob) {
       <td class="col-pct ${trendColor(yoy)}">${yoy != null ? (yoy >= 0 ? '+' : '') + yoy.toFixed(1) + '%' : '—'}</td>
     `;
     tbody.appendChild(tr);
+  });
+}
+
+// ─── CHANNEL / BRAND / VAS LIST ──────────────────────────
+function renderSectionList(rowType, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const rows = allRecords
+    .filter(r => r.row_type === rowType)
+    .sort((a, b) => (b.pct_ach_mtd || 0) - (a.pct_ach_mtd || 0));
+
+  if (rows.length === 0) {
+    container.innerHTML = '<p class="empty-text">Tidak ada data.</p>';
+    return;
+  }
+
+  container.innerHTML = '';
+  const maxMtd = Math.max(...rows.map(r => r.mtd || 0), 1);
+
+  rows.forEach((r, idx) => {
+    const name     = r.tsh_name || '—';
+    const pct      = r.pct_ach_mtd;
+    const mtd      = r.mtd;
+    const rankNum  = idx + 1;
+    const rankClass = rankNum === 1 ? 'top-1' : rankNum === 2 ? 'top-2' : rankNum === 3 ? 'top-3' : '';
+
+    let barColor = '#CBD5E0';
+    if (pct != null) {
+      barColor = pct >= 100 ? 'var(--success)' : pct >= 80 ? 'var(--warning)' : 'var(--danger)';
+    }
+    const barWidth = mtd != null ? Math.min((mtd / maxMtd) * 100, 100).toFixed(1) : 0;
+
+    const div = document.createElement('div');
+    div.className = 'ranking-item';
+    div.innerHTML = `
+      <div class="ranking-rank ${rankClass}">${rankNum}</div>
+      <div class="ranking-info">
+        <div class="ranking-name">${name}</div>
+        <div class="ranking-bar-wrap">
+          <div class="ranking-bar-bg">
+            <div class="ranking-bar-fill" style="width:${barWidth}%;background:${barColor};"></div>
+          </div>
+          <span class="ranking-pct ${achColor(pct)}">
+            ${pct != null ? pct.toFixed(1) + '%' : '—'}
+          </span>
+        </div>
+      </div>
+      <div class="ranking-mtd">${formatRupiah(mtd)}</div>
+    `;
+    container.appendChild(div);
   });
 }
 

@@ -134,21 +134,56 @@ function parseExcel(file) {
       // Parse setiap baris
       const records = [];
       let currentLob = null;
+      let currentSection = 'tsh'; // 'tsh', 'channel', 'brand', 'vas'
+      let seenBrandTotal = false;
 
       for (const row of dataRows) {
         if (!row || !row[colMap.name]) continue;
         const name = String(row[colMap.name]).trim();
         if (!name || name === '' || name === 'null') continue;
 
-        // Skip baris subtotal / grand total
-        if (name.toUpperCase().includes('TOTAL') || name.toUpperCase().includes('GRAND')) continue;
+        const upperName = name.toUpperCase();
 
-        const isLob = LOB_NAMES.some(l => name.toUpperCase().includes(l));
-        if (isLob) currentLob = name.toUpperCase();
+        // ── Deteksi pergantian seksi ──────────────────────────
+        if (upperName === 'CHANNEL' || upperName.startsWith('CHANNEL ')) {
+          currentSection = 'channel'; seenBrandTotal = false; continue;
+        }
+        if (upperName === 'BRAND DEVICE' || upperName.startsWith('BRAND DEVICE ')) {
+          currentSection = 'brand'; seenBrandTotal = false; continue;
+        }
+        if (upperName === 'LOB & TSH' || upperName.startsWith('LOB & TSH')) {
+          currentSection = 'tsh'; continue;
+        }
 
-        const rowType = isLob ? 'LOB' : 'TSH';
+        // ── Skip baris subtotal / grand total ────────────────
+        if (upperName.includes('TOTAL') || upperName.includes('GRAND')) {
+          if (currentSection === 'brand') seenBrandTotal = true;
+          continue;
+        }
 
-        // Parse daily sales
+        // ── Setelah Brand Total → masuk seksi VAS ────────────
+        if (seenBrandTotal && currentSection === 'brand') {
+          currentSection = 'vas';
+          seenBrandTotal = false;
+        }
+
+        // ── Tentukan row_type & nama ──────────────────────────
+        let rowType, lobName, tshName;
+        if (currentSection === 'tsh') {
+          const isLob = LOB_NAMES.some(l => upperName.includes(l));
+          if (isLob) currentLob = upperName;
+          rowType = isLob ? 'LOB' : 'TSH';
+          lobName = isLob ? name : currentLob;
+          tshName = isLob ? null : name;
+        } else {
+          rowType  = currentSection === 'channel' ? 'CHANNEL'
+                   : currentSection === 'brand'   ? 'BRAND'
+                   : 'VAS';
+          lobName  = null;
+          tshName  = name;
+        }
+
+        // ── Parse data harian ─────────────────────────────────
         const dailySales = {};
         for (const [dateKey, colIdx] of Object.entries(colMap.daily || {})) {
           const v = parseNum(row[colIdx]);
@@ -157,8 +192,8 @@ function parseExcel(file) {
 
         records.push({
           row_type:     rowType,
-          lob_name:     isLob ? name : currentLob,
-          tsh_name:     isLob ? null : name,
+          lob_name:     lobName,
+          tsh_name:     tshName,
           baseline_yoy: parseNum(row[colMap.yoy_base]),
           baseline_mom: parseNum(row[colMap.mom_base]),
           target_april: parseNum(row[colMap.target]),
