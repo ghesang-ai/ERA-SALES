@@ -155,9 +155,12 @@ function renderKPIs(records, selectedLob) {
 
   const totalMtd    = sum(lobRows, 'mtd');
   const totalTarget = sum(lobRows, 'target_april');
+  const totalEst    = sum(lobRows, 'estimate');
   const pctAch      = totalTarget > 0 ? (totalMtd / totalTarget * 100) : null;
+  const pctAchEst   = totalEst   > 0 ? (totalMtd / totalEst   * 100) : null;
   const avgYoy      = avg(lobRows, 'yoy_growth');
   const avgMom      = avg(lobRows, 'mom_growth');
+  const avgYtd      = avg(lobRows, 'ytd_growth');
 
   // MTD
   setKPI('kpi-mtd', formatRupiah(totalMtd), '', null);
@@ -165,20 +168,38 @@ function renderKPIs(records, selectedLob) {
   // Target
   setKPI('kpi-target', formatRupiah(totalTarget), '', null);
 
-  // % Pencapaian
+  // % Ach vs ROFO
   const achClass = pctAch != null
-    ? (pctAch >= 100 ? 'positive' : pctAch >= 80 ? 'warning' : 'negative')
-    : '';
+    ? (pctAch >= 100 ? 'positive' : pctAch >= 80 ? 'warning' : 'negative') : '';
   setKPI('kpi-ach', pctAch != null ? pctAch.toFixed(1) + '%' : '—', 'vs ROFO', achClass);
 
   // YoY
   const yoyClass = avgYoy != null ? (avgYoy >= 0 ? 'positive' : 'negative') : '';
-  setKPI(
-    'kpi-yoy',
+  setKPI('kpi-yoy',
     avgYoy != null ? (avgYoy >= 0 ? '+' : '') + avgYoy.toFixed(1) + '%' : '—',
-    'vs April 2025',
-    yoyClass
-  );
+    'vs April 2025', yoyClass);
+
+  // Estimasi
+  setKPI('kpi-est', formatRupiah(totalEst), 'akhir bulan', null);
+
+  // % Ach vs Est
+  const achEstClass = pctAchEst != null
+    ? (pctAchEst >= 100 ? 'positive' : pctAchEst >= 80 ? 'warning' : 'negative') : '';
+  setKPI('kpi-ach-est',
+    pctAchEst != null ? pctAchEst.toFixed(1) + '%' : '—',
+    'vs Estimasi', achEstClass);
+
+  // MoM
+  const momClass = avgMom != null ? (avgMom >= 0 ? 'positive' : 'negative') : '';
+  setKPI('kpi-mom',
+    avgMom != null ? (avgMom >= 0 ? '+' : '') + avgMom.toFixed(1) + '%' : '—',
+    'vs Maret 2026', momClass);
+
+  // YTD
+  const ytdClass = avgYtd != null ? (avgYtd >= 0 ? 'positive' : 'negative') : '';
+  setKPI('kpi-ytd',
+    avgYtd != null ? (avgYtd >= 0 ? '+' : '') + avgYtd.toFixed(1) + '%' : '—',
+    'Jan–Apr 2026', ytdClass);
 }
 
 function setKPI(id, value, sub, colorClass) {
