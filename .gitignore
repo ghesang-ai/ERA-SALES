@@ -1,0 +1,14 @@
+# File Excel master (ukuran besar)
+MASTER/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Claude Code
+.claude/
+dashboard/.claude/
+
+# Netlify local config
+.netlify/
+dashboard/.netlify/
