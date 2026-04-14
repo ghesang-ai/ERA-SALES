@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERA-SALES — Memverifikasi...</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="brand-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="12" fill="#1E3A7A"/>
+          <path d="M12 34L20 22L26 28L32 18L36 22" stroke="#F6B93B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="36" cy="14" r="3" fill="#F6B93B"/>
+        </svg>
+      </div>
+      <h1 class="brand-name">ERA-SALES</h1>
+    </div>
+    <div class="login-card" style="text-align:center;">
+      <div id="loading-state">
+        <div class="spinner"></div>
+        <h2 class="login-title" style="margin-top:1.5rem;">Memverifikasi akses...</h2>
+        <p class="login-desc">Mohon tunggu sebentar.</p>
+      </div>
+      <div id="error-state" class="hidden">
+        <div style="font-size:3rem;margin-bottom:1rem;">⚠️</div>
+        <h2 class="login-title">Link Tidak Valid</h2>
+        <p class="login-desc">Link sudah kadaluarsa atau tidak valid. Silakan minta link baru.</p>
+        <a href="index.html" class="btn btn-primary btn-full" style="margin-top:1.5rem;">Kembali ke Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Supabase otomatis menangani token dari URL hash
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+      if (error || !session) {
+        // Coba exchange token dari URL hash
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+
+        if (accessToken) {
+          const { data, error: setError } = await supabaseClient.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          if (setError || !data.session) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+            return;
+          }
+        } else {
+          document.getElementById('loading-state').classList.add('hidden');
+          document.getElementById('error-state').classList.remove('hidden');
+          return;
+        }
+      }
+
+      // Cek apakah user punya profil
+      const { data: profile } = await supabaseClient
+        .from('user_profiles')
+        .select('role')
+        .eq('id', (await supabaseClient.auth.getUser()).data.user.id)
+        .single();
+
+      if (profile && profile.role === 'admin') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    });
+  </script>
+</body>
+</html>
