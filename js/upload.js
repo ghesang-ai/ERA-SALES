@@ -6,18 +6,12 @@ let parsedData = null;
 let selectedFile = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Auth guard: hanya admin
-  const user = await requireAdmin();
-  if (!user) return;
-
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('admin-content').classList.remove('hidden');
 
-  initLogout();
   initDropZone();
   initFileInput();
   initSubmit();
-  initUserManagement(user);
   loadUploadHistory();
 });
 

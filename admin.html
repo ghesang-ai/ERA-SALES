@@ -28,13 +28,6 @@
     </div>
     <div class="header-right">
       <a href="dashboard.html" class="btn btn-outline btn-sm">Lihat Dashboard</a>
-      <button class="header-logout" id="logout-btn" title="Keluar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-      </button>
     </div>
   </header>
 
@@ -147,63 +140,6 @@
         </div>
       </div>
 
-      <!-- User Management -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Manajemen User</h3>
-          <button class="btn btn-primary btn-sm" id="add-user-btn">+ Tambah User</button>
-        </div>
-        <div id="user-list">
-          <p class="empty-text">Memuat daftar user...</p>
-        </div>
-      </div>
-
-      <!-- Add User Modal -->
-      <div class="modal-overlay hidden" id="add-user-modal">
-        <div class="modal-sheet">
-          <div class="modal-handle"></div>
-          <div class="modal-body">
-            <h3 class="modal-title">Tambah User Baru</h3>
-            <form id="add-user-form">
-              <div class="form-group">
-                <label class="form-label">Nama Lengkap</label>
-                <input type="text" class="form-input" id="new-user-name" placeholder="Contoh: ABDILLAH" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="new-user-email" placeholder="email@example.com" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Role</label>
-                <select class="form-input" id="new-user-role">
-                  <option value="lob">LOB</option>
-                  <option value="tsh">TSH</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div class="form-group" id="lob-select-group">
-                <label class="form-label">LOB</label>
-                <select class="form-input" id="new-user-lob">
-                  <option value="MARDIANSAH">MARDIANSAH</option>
-                  <option value="ARIS FACHRUDIN">ARIS FACHRUDIN</option>
-                  <option value="ANDI IRAWAN">ANDI IRAWAN</option>
-                  <option value="RACHMAT">RACHMAT</option>
-                </select>
-              </div>
-              <div class="form-group hidden" id="tsh-name-group">
-                <label class="form-label">Nama TSH (sesuai data)</label>
-                <input type="text" class="form-input" id="new-user-tsh" placeholder="Contoh: ABDILLAH" />
-              </div>
-              <div id="add-user-error" class="error-banner hidden"></div>
-              <button type="submit" class="btn btn-primary btn-full" id="save-user-btn">
-                <span class="btn-text">Simpan & Kirim Undangan</span>
-                <span class="btn-loading hidden">Menyimpan...</span>
-              </button>
-              <button type="button" class="btn btn-outline btn-full" id="cancel-user-btn" style="margin-top:0.75rem;">Batal</button>
-            </form>
-          </div>
-        </div>
-      </div>
 
       <div style="height:40px;"></div>
     </div>
