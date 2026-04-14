@@ -4,7 +4,7 @@
   status = 200
 
 [build]
-  publish = "."
+  publish = "dashboard"
 
 [[headers]]
   for = "/*"
