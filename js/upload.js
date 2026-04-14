@@ -88,7 +88,7 @@ function parseExcel(file) {
       const wb = XLSX.read(e.target.result, {
         type: 'array',
         cellDates: true,
-        sheets: ['SUM R5']  // Hanya baca sheet SUM R5, skip sheet besar lainnya
+        sheets: ['SUM R5', 'BY STORE']
       });
 
       // Cari sheet "SUM R5"
@@ -213,6 +213,28 @@ function parseExcel(file) {
       if (records.length === 0) {
         showUploadError('Tidak ada data yang berhasil dibaca dari sheet "SUM R5". Periksa format file.');
         return;
+      }
+
+      // Baca ach_april dari sheet BY STORE kolom OT, agregasi per TSH
+      const tshAchMap = parseByStoreAchievement(wb);
+
+      // Isi ach_april untuk TSH rows
+      for (const rec of records) {
+        if (rec.row_type === 'TSH') {
+          const key = (rec.tsh_name || '').toUpperCase();
+          rec.ach_april = tshAchMap[key] != null ? tshAchMap[key] : null;
+        }
+      }
+      // Untuk LOB rows: rata-rata ach_april dari TSH di bawahnya
+      for (const rec of records) {
+        if (rec.row_type === 'LOB') {
+          const tshVals = records
+            .filter(r => r.row_type === 'TSH' && r.lob_name === rec.lob_name && r.ach_april != null)
+            .map(r => r.ach_april);
+          rec.ach_april = tshVals.length > 0
+            ? tshVals.reduce((a, b) => a + b, 0) / tshVals.length
+            : null;
+        }
       }
 
       // Deteksi periode dari daily sales keys
@@ -424,10 +446,19 @@ function initSubmit() {
 
     document.getElementById('upload-error').classList.add('hidden');
 
+    let newUploadId = null;
+
     try {
       const { data: { user } } = await supabaseClient.auth.getUser();
 
-      // 1. Insert upload_history
+      // 1. Ambil daftar upload aktif SEBELUM insert baru (untuk cleanup nanti)
+      const { data: previousActive } = await supabaseClient
+        .from('upload_history')
+        .select('id')
+        .eq('is_active', true);
+      const previousIds = (previousActive || []).map(u => u.id);
+
+      // 2. Insert upload_history baru
       const { data: upload, error: uploadErr } = await supabaseClient
         .from('upload_history')
         .insert({
@@ -442,25 +473,21 @@ function initSubmit() {
         .single();
 
       if (uploadErr) throw new Error('Gagal menyimpan info upload: ' + uploadErr.message);
+      newUploadId = upload.id;
+      // Trigger Supabase otomatis set is_active=false untuk upload lama
 
-      // 2. Delete data sales lama yang aktif (lewat trigger Supabase, tapi juga cleanup manual)
-      const { data: oldUploads } = await supabaseClient
-        .from('upload_history')
-        .select('id')
-        .eq('is_active', false);
-
-      if (oldUploads && oldUploads.length > 0) {
-        const oldIds = oldUploads.map(u => u.id);
-        await supabaseClient.from('sales_summary').delete().in('upload_id', oldIds);
-      }
-
-      // 3. Insert sales_summary rows (batch per 50)
+      // 3. Insert sales_summary baru DULU (sebelum hapus data lama)
       const rows = parsedData.records.map(r => ({ ...r, upload_id: upload.id }));
       const batchSize = 50;
       for (let i = 0; i < rows.length; i += batchSize) {
         const batch = rows.slice(i, i + batchSize);
         const { error: insertErr } = await supabaseClient.from('sales_summary').insert(batch);
-        if (insertErr) throw new Error('Gagal menyimpan data sales: ' + insertErr.message);
+        if (insertErr) throw new Error(`Gagal menyimpan data sales (batch ${Math.floor(i/batchSize)+1}): ${insertErr.message}`);
+      }
+
+      // 4. Baru hapus data sales lama (hanya setelah insert baru sukses)
+      if (previousIds.length > 0) {
+        await supabaseClient.from('sales_summary').delete().in('upload_id', previousIds);
       }
 
       // Sukses
@@ -469,6 +496,23 @@ function initSubmit() {
       loadUploadHistory();
 
     } catch (err) {
+      // Rollback: hapus upload_history baru jika insert sales gagal
+      if (newUploadId) {
+        await supabaseClient.from('sales_summary').delete().eq('upload_id', newUploadId);
+        await supabaseClient.from('upload_history').delete().eq('id', newUploadId);
+        // Aktifkan kembali upload sebelumnya
+        const { data: prevUploads } = await supabaseClient
+          .from('upload_history')
+          .select('id')
+          .eq('is_active', false)
+          .order('uploaded_at', { ascending: false })
+          .limit(1);
+        if (prevUploads && prevUploads.length > 0) {
+          await supabaseClient.from('upload_history')
+            .update({ is_active: true })
+            .eq('id', prevUploads[0].id);
+        }
+      }
       showUploadError(err.message);
     } finally {
       btnText.classList.remove('hidden');
@@ -614,6 +658,44 @@ async function loadUserList() {
       <span class="role-badge ${u.role}">${u.role.toUpperCase()}</span>
     </div>
   `).join('');
+}
+
+// ─── BY STORE: Ach April per TSH ─────────────────────────────
+// Membaca sheet BY STORE, mengambil kolom OT (index 409, 0-based)
+// dan mengagresi rata-rata per TSH sebagai persentase
+function parseByStoreAchievement(wb) {
+  const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'BY STORE');
+  if (!sheetName || !wb.Sheets[sheetName]) return {};
+
+  const ws = wb.Sheets[sheetName];
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+
+  const OT_COL = 409; // Kolom OT (0-based index)
+  const TSH_COL = 4;  // Kolom TSH (0-based index)
+
+  // Mulai dari baris ke-4 (index 3) — skip 3 header rows
+  const tshMap = {};
+  for (let i = 3; i < raw.length; i++) {
+    const row = raw[i];
+    if (!row) continue;
+    const tsh = row[TSH_COL];
+    const val = row[OT_COL];
+    if (!tsh || val === null || val === undefined) continue;
+    const tshKey = String(tsh).trim().toUpperCase();
+    if (!tshKey || tshKey === 'TSH') continue;
+    const num = parseFloat(val);
+    if (isNaN(num) || num === 0) continue;
+    if (!tshMap[tshKey]) tshMap[tshKey] = [];
+    tshMap[tshKey].push(num);
+  }
+
+  // Hitung rata-rata dan konversi ke persen
+  const result = {};
+  for (const [tsh, vals] of Object.entries(tshMap)) {
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    result[tsh] = avg * 100; // 1.15 → 115%
+  }
+  return result;
 }
 
 // ─── ERROR HELPER ────────────────────────────────────────────

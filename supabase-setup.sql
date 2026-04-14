@@ -30,7 +30,7 @@ CREATE TABLE public.upload_history (
 CREATE TABLE public.sales_summary (
   id             UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   upload_id      UUID REFERENCES public.upload_history(id) ON DELETE CASCADE,
-  row_type       TEXT NOT NULL CHECK (row_type IN ('LOB', 'TSH', 'TOTAL')),
+  row_type       TEXT NOT NULL CHECK (row_type IN ('LOB', 'TSH', 'CHANNEL', 'BRAND', 'VAS')),
   lob_name       TEXT,
   tsh_name       TEXT,
   baseline_yoy   NUMERIC,
@@ -46,6 +46,7 @@ CREATE TABLE public.sales_summary (
   ytd_2025       NUMERIC,
   ytd_2026       NUMERIC,
   ytd_growth     NUMERIC,
+  ach_april      NUMERIC,   -- % Ach April 2026 (dari BY STORE sheet kolom OT, rata-rata per TSH)
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -149,6 +150,20 @@ CREATE TRIGGER trigger_deactivate_old_uploads
 AFTER INSERT ON public.upload_history
 FOR EACH ROW
 EXECUTE FUNCTION deactivate_old_uploads();
+
+-- ============================================================
+-- ============================================================
+-- MIGRASI: Jalankan jika tabel sales_summary sudah ada sebelumnya
+-- ============================================================
+-- ALTER TABLE public.sales_summary ADD COLUMN IF NOT EXISTS ach_april NUMERIC;
+
+-- MIGRASI: Fix row_type CHECK constraint (tambahkan CHANNEL, BRAND, VAS)
+-- Jalankan perintah ini di Supabase SQL Editor jika tabel sudah ada:
+-- ALTER TABLE public.sales_summary
+--   DROP CONSTRAINT IF EXISTS sales_summary_row_type_check;
+-- ALTER TABLE public.sales_summary
+--   ADD CONSTRAINT sales_summary_row_type_check
+--   CHECK (row_type IN ('LOB', 'TSH', 'CHANNEL', 'BRAND', 'VAS'));
 
 -- ============================================================
 -- DATA AWAL: Insert profil admin
