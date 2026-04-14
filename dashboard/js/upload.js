@@ -6,17 +6,55 @@ let parsedData = null;
 let selectedFile = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const currentUser = await requireAdmin();
-  if (!currentUser) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
 
   document.getElementById('loading-overlay').classList.add('hidden');
-  document.getElementById('admin-content').classList.remove('hidden');
 
-  initDropZone();
-  initFileInput();
-  initSubmit();
-  loadUploadHistory();
+  if (!user) {
+    document.getElementById('login-section').classList.remove('hidden');
+  } else {
+    document.getElementById('admin-content').classList.remove('hidden');
+    initDropZone();
+    initFileInput();
+    initSubmit();
+    loadUploadHistory();
+  }
+
+  initLogin();
 });
+
+// ─── LOGIN ───────────────────────────────────────────────────
+function initLogin() {
+  const btn = document.getElementById('login-btn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const msg = document.getElementById('login-msg');
+    if (!email) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Mengirim...';
+
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href }
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Kirim';
+    msg.classList.remove('hidden');
+
+    if (error) {
+      msg.style.background = '#fee2e2';
+      msg.style.color = '#b91c1c';
+      msg.textContent = 'Gagal: ' + error.message;
+    } else {
+      msg.style.background = '#dcfce7';
+      msg.style.color = '#15803d';
+      msg.textContent = 'Magic link terkirim! Cek email Anda lalu klik link untuk login.';
+    }
+  });
+}
 
 // ─── DROP ZONE ──────────────────────────────────────────────
 function initDropZone() {
