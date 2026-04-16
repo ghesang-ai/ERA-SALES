@@ -689,12 +689,12 @@ function renderDetailTable(records, selectedLob) {
     const isLob  = r.row_type === 'LOB';
     const name   = r.tsh_name || r.lob_name || '—';
     const pctAch = r.pct_ach_mtd;
+    const pctEst = r.pct_ach_est;
     const mom    = r.mom_growth;
     const yoy    = r.yoy_growth;
 
     const tr = document.createElement('tr');
     tr.className = isLob ? 'row-lob' : 'row-tsh';
-    const achApr = r.ach_april;
     tr.innerHTML = `
       <td class="col-name">
         ${!isLob ? '<span style="margin-right:0.5rem;opacity:.3;font-size:.75rem;">└</span>' : ''}
@@ -704,7 +704,7 @@ function renderDetailTable(records, selectedLob) {
       <td class="col-num">${formatRupiah(r.mtd)}</td>
       <td class="col-pct ${achColor(pctAch)}">${pctAch != null ? pctAch.toFixed(1) + '%' : '—'}</td>
       <td class="col-num">${formatRupiah(r.estimate)}</td>
-      <td class="col-pct ${achColor(achApr)}">${achApr != null ? achApr.toFixed(1) + '%' : '—'}</td>
+      <td class="col-pct ${achColor(pctEst)}">${pctEst != null ? pctEst.toFixed(1) + '%' : '—'}</td>
       <td class="col-pct ${trendColor(mom)}">${mom != null ? (mom >= 0 ? '+' : '') + mom.toFixed(1) + '%' : '—'}</td>
       <td class="col-pct ${trendColor(yoy)}">${yoy != null ? (yoy >= 0 ? '+' : '') + yoy.toFixed(1) + '%' : '—'}</td>
     `;
@@ -719,7 +719,7 @@ function renderSectionList(rowType, containerId) {
 
   const rows = allRecords
     .filter(r => r.row_type === rowType)
-    .sort((a, b) => (b.pct_ach_mtd || 0) - (a.pct_ach_mtd || 0));
+    .sort((a, b) => (b.pct_ach_est || 0) - (a.pct_ach_est || 0));
 
   if (rows.length === 0) {
     container.innerHTML = '<p class="empty-text">Tidak ada data.</p>';
@@ -727,12 +727,12 @@ function renderSectionList(rowType, containerId) {
   }
 
   container.innerHTML = '';
-  const maxMtd = Math.max(...rows.map(r => r.mtd || 0), 1);
+  const maxEst = Math.max(...rows.map(r => r.estimate || 0), 1);
 
   rows.forEach((r, idx) => {
     const name     = r.tsh_name || '—';
-    const pct      = r.pct_ach_mtd;
-    const mtd      = r.mtd;
+    const pct      = r.pct_ach_est;
+    const est      = r.estimate;
     const rankNum  = idx + 1;
     const rankClass = rankNum === 1 ? 'top-1' : rankNum === 2 ? 'top-2' : rankNum === 3 ? 'top-3' : '';
 
@@ -740,7 +740,7 @@ function renderSectionList(rowType, containerId) {
     if (pct != null) {
       barColor = pct >= 100 ? 'var(--success)' : pct >= 80 ? 'var(--warning)' : 'var(--danger)';
     }
-    const barWidth = mtd != null ? Math.min((mtd / maxMtd) * 100, 100).toFixed(1) : 0;
+    const barWidth = est != null ? Math.min((est / maxEst) * 100, 100).toFixed(1) : 0;
 
     const div = document.createElement('div');
     div.className = 'ranking-item';
@@ -752,12 +752,9 @@ function renderSectionList(rowType, containerId) {
           <div class="ranking-bar-bg">
             <div class="ranking-bar-fill" style="width:${barWidth}%;background:${barColor};"></div>
           </div>
-          <span class="ranking-pct ${achColor(pct)}">
-            ${pct != null ? pct.toFixed(1) + '%' : '—'}
-          </span>
         </div>
       </div>
-      <div class="ranking-mtd">${formatRupiah(mtd)}</div>
+      <div class="ranking-mtd">${formatRupiah(est)}</div>
     `;
     container.appendChild(div);
   });
