@@ -752,6 +752,9 @@ function renderSectionList(rowType, containerId) {
           <div class="ranking-bar-bg">
             <div class="ranking-bar-fill" style="width:${barWidth}%;background:${barColor};"></div>
           </div>
+          <span class="ranking-pct ${achColor(pct)}">
+            ${pct != null ? pct.toFixed(1) + '%' : '—'}
+          </span>
         </div>
       </div>
       <div class="ranking-mtd">${formatRupiah(est)}</div>
