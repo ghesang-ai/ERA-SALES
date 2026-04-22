@@ -1,0 +1,17 @@
+{
+  "name": "era-sales-automation",
+  "version": "1.0.0",
+  "description": "Otomasi download dan upload data Sales dari email Melati ke ERA-SALES Dashboard",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.4.5",
+    "imapflow": "^1.0.164",
+    "mailparser": "^3.7.1",
+    "node-fetch": "^2.7.0",
+    "xlsx": "^0.18.5"
+  }
+}
