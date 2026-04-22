@@ -25,7 +25,7 @@ async function getLatestEmail() {
     today.setHours(0, 0, 0, 0);
 
     const uids = await client.search(
-      { from: process.env.EMAIL_FROM, since: today },
+      { from: process.env.EMAIL_FROM, since: today, subject: 'Sales vs Stock B2C Region 5' },
       { uid: true }
     );
 
