@@ -30,7 +30,7 @@
         <div style="font-size:3rem;margin-bottom:1rem;">⚠️</div>
         <h2 class="login-title">Link Tidak Valid</h2>
         <p class="login-desc">Link sudah kadaluarsa atau tidak valid. Silakan minta link baru.</p>
-        <a href="admin-login.html" class="btn btn-primary btn-full" style="margin-top:1.5rem;">Kembali ke Login</a>
+        <a href="index.html" class="btn btn-primary btn-full" style="margin-top:1.5rem;">Kembali</a>
       </div>
     </div>
   </div>
@@ -40,43 +40,64 @@
   <script src="js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // Supabase otomatis menangani token dari URL hash
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      // Tangani token dari URL hash (magic link)
+      let { data: { session }, error } = await supabaseClient.auth.getSession();
 
-      if (error || !session) {
-        // Coba exchange token dari URL hash
+      if (!session) {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
+        const accessToken  = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
-
         if (accessToken) {
-          const { data, error: setError } = await supabaseClient.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-          if (setError || !data.session) {
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('error-state').classList.remove('hidden');
-            return;
-          }
+          const { data, error: setErr } = await supabaseClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (setErr || !data.session) { showError(); return; }
+          session = data.session;
         } else {
-          document.getElementById('loading-state').classList.add('hidden');
-          document.getElementById('error-state').classList.remove('hidden');
-          return;
+          showError(); return;
         }
       }
 
-      // Cek apakah user punya profil
+      const authUser = session.user;
+
+      // Cek apakah profil sudah ada
       const { data: profile } = await supabaseClient
         .from('user_profiles')
-        .select('role')
-        .eq('id', (await supabaseClient.auth.getUser()).data.user.id)
+        .select('*')
+        .eq('id', authUser.id)
         .single();
 
-      if (profile && profile.role === 'admin') {
+      if (!profile) {
+        // Buat profil baru dengan status pending
+        const pendingName  = localStorage.getItem('era_pending_name') || authUser.email.split('@')[0];
+        const pendingEmail = authUser.email;
+        localStorage.removeItem('era_pending_name');
+        localStorage.removeItem('era_pending_email');
+
+        await supabaseClient.from('user_profiles').insert({
+          id:        authUser.id,
+          email:     pendingEmail,
+          full_name: pendingName,
+          role:      'tsh',
+          status:    'pending'
+        });
+
+        window.location.href = 'pending.html';
+        return;
+      }
+
+      // Routing berdasarkan role dan status
+      if (profile.role === 'admin') {
         window.location.href = 'admin.html';
-      } else {
+      } else if (profile.status === 'approved') {
         window.location.href = 'dashboard.html';
+      } else if (profile.status === 'rejected') {
+        window.location.href = 'pending.html';
+      } else {
+        window.location.href = 'pending.html';
+      }
+
+      function showError() {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('error-state').classList.remove('hidden');
       }
     });
   </script>

@@ -2,10 +2,106 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=dashboard.html" />
-  <title>ERA-SALES</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1E3A7A" />
+  <title>ERA-SALES — Masuk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
-  <script>window.location.replace('dashboard.html');</script>
+<body class="login-body">
+
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="brand-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="12" fill="#1E3A7A"/>
+          <path d="M12 34L20 22L26 28L32 18L36 22" stroke="#F6B93B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="36" cy="14" r="3" fill="#F6B93B"/>
+        </svg>
+      </div>
+      <h1 class="brand-name">ERA-SALES</h1>
+      <p class="brand-sub">SUMMARY REPORT REGION 5</p>
+    </div>
+
+    <div class="login-card" id="form-card">
+      <h2 class="login-title">Selamat Datang</h2>
+      <p class="login-desc">Masukkan data kamu untuk mendapatkan link akses.</p>
+      <div class="login-form">
+        <input type="text" id="name-input" class="login-input" placeholder="Nama lengkap" autocomplete="name" />
+        <input type="email" id="email-input" class="login-input" placeholder="Email kamu" autocomplete="email" inputmode="email" style="margin-top:0.75rem;" />
+        <button class="btn btn-primary btn-full" id="send-btn" style="margin-top:1rem;">Minta Akses</button>
+      </div>
+      <div id="form-error" class="error-banner hidden"></div>
+    </div>
+
+    <div class="login-card hidden" id="success-card" style="text-align:center;">
+      <div style="font-size:3rem;margin-bottom:1rem;">📧</div>
+      <h2 class="login-title">Cek Email Kamu</h2>
+      <p class="login-desc">Link akses sudah dikirim ke <strong id="sent-email"></strong>. Klik link tersebut untuk melanjutkan.</p>
+      <button class="btn btn-outline btn-full" id="back-btn" style="margin-top:1.5rem;">Kirim Ulang</button>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        const user = await getCurrentUser();
+        if (user && (user.profile?.status === 'approved' || user.profile?.role === 'admin')) {
+          window.location.href = 'dashboard.html'; return;
+        }
+        if (user && user.profile?.status === 'pending') {
+          window.location.href = 'pending.html'; return;
+        }
+      }
+
+      const sendBtn    = document.getElementById('send-btn');
+      const backBtn    = document.getElementById('back-btn');
+      const nameInput  = document.getElementById('name-input');
+      const emailInput = document.getElementById('email-input');
+      const errorDiv   = document.getElementById('form-error');
+
+      async function doSend() {
+        const name  = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        errorDiv.classList.add('hidden');
+        if (!name)  { errorDiv.textContent = 'Masukkan nama lengkap kamu.'; errorDiv.classList.remove('hidden'); return; }
+        if (!email) { errorDiv.textContent = 'Masukkan email kamu.'; errorDiv.classList.remove('hidden'); return; }
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Mengirim...';
+
+        localStorage.setItem('era_pending_name', name);
+        localStorage.setItem('era_pending_email', email);
+
+        const result = await sendMagicLink(email);
+        if (result.success) {
+          document.getElementById('sent-email').textContent = email;
+          document.getElementById('form-card').classList.add('hidden');
+          document.getElementById('success-card').classList.remove('hidden');
+        } else {
+          errorDiv.textContent = result.error || 'Gagal mengirim email. Coba lagi.';
+          errorDiv.classList.remove('hidden');
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Minta Akses';
+        }
+      }
+
+      sendBtn.addEventListener('click', doSend);
+      emailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+      nameInput.addEventListener('keydown',  (e) => { if (e.key === 'Enter') emailInput.focus(); });
+
+      backBtn.addEventListener('click', () => {
+        document.getElementById('success-card').classList.add('hidden');
+        document.getElementById('form-card').classList.remove('hidden');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Minta Akses';
+      });
+    });
+  </script>
 </body>
 </html>

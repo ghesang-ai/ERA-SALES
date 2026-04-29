@@ -166,6 +166,61 @@ EXECUTE FUNCTION deactivate_old_uploads();
 --   CHECK (row_type IN ('LOB', 'TSH', 'CHANNEL', 'BRAND', 'VAS'));
 
 -- ============================================================
+-- MIGRASI: Sistem Login & Approval TSH
+-- Jalankan di Supabase SQL Editor (Dashboard → SQL Editor)
+-- ============================================================
+
+-- 1. Tambah kolom status ke user_profiles
+ALTER TABLE public.user_profiles
+  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'
+  CHECK (status IN ('pending', 'approved', 'rejected'));
+
+-- 2. Admin otomatis approved
+UPDATE public.user_profiles SET status = 'approved' WHERE role = 'admin';
+
+-- 3. Izinkan user insert profil sendiri (untuk auto-registrasi)
+DROP POLICY IF EXISTS "user_insert_own_profil" ON public.user_profiles;
+CREATE POLICY "user_insert_own_profil" ON public.user_profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- 4. User hanya bisa baca profilnya sendiri (sudah ada, pastikan ada)
+DROP POLICY IF EXISTS "user_lihat_profil_sendiri" ON public.user_profiles;
+CREATE POLICY "user_lihat_profil_sendiri" ON public.user_profiles
+  FOR SELECT USING (auth.uid() = id);
+
+-- 5. Admin bisa baca & update semua profil
+DROP POLICY IF EXISTS "admin_lihat_semua_profil" ON public.user_profiles;
+CREATE POLICY "admin_lihat_semua_profil" ON public.user_profiles
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+DROP POLICY IF EXISTS "admin_update_profil" ON public.user_profiles;
+CREATE POLICY "admin_update_profil" ON public.user_profiles
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- 6. Hanya approved user yang bisa lihat data sales
+DROP POLICY IF EXISTS "auth_lihat_sales" ON public.sales_summary;
+CREATE POLICY "auth_lihat_sales" ON public.sales_summary
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.user_profiles
+      WHERE id = auth.uid() AND (status = 'approved' OR role = 'admin')
+    )
+  );
+
+DROP POLICY IF EXISTS "auth_lihat_upload" ON public.upload_history;
+CREATE POLICY "auth_lihat_upload" ON public.upload_history
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.user_profiles
+      WHERE id = auth.uid() AND (status = 'approved' OR role = 'admin')
+    )
+  );
+
+-- ============================================================
 -- DATA AWAL: Insert profil admin
 -- GANTI email di bawah dengan email Anda!
 -- Jalankan SETELAH Anda login pertama kali via magic link
