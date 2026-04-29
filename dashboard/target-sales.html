@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Target Sales — Region 5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root {
+      --sam:   #1428A0; --sam-2: #1B74E4;
+      --apple: #1d1d1f; --apple-2: #424245;
+      --oppo:  #1D4ED8; --oppo-2: #3B82F6;
+      --vivo:  #415FFF; --vivo-2: #818CF8;
+      --xiaomi:#FF6900; --xiaomi-2:#FB923C;
+      --ai-p:  #6C63FF; --ai-p2: #9B8FFF;
+    }
+
+    /* ── Header ── */
+    .ts-header {
+      position: fixed; top:0; left:0; right:0; height:60px;
+      background: var(--primary);
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 0 1rem; z-index:100;
+      box-shadow: 0 2px 12px rgba(30,58,122,.2);
+    }
+    .ts-header-left { display:flex; align-items:center; gap:.625rem; }
+    .ts-title { font-size:.95rem; font-weight:800; color:#fff; }
+    .ts-sub   { font-size:.65rem; color:rgba(255,255,255,.6); text-transform:uppercase; letter-spacing:.05em; }
+    .ai-badge {
+      background: linear-gradient(135deg,#6C63FF,#9B8FFF);
+      color:#fff; font-size:.65rem; font-weight:700;
+      padding:.25rem .625rem; border-radius:20px; letter-spacing:.05em;
+      animation: pulse-ai 2s ease-in-out infinite;
+    }
+    @keyframes pulse-ai {
+      0%,100%{ box-shadow:0 0 0 0 rgba(108,99,255,.4); }
+      50%    { box-shadow:0 0 0 6px rgba(108,99,255,0); }
+    }
+
+    /* ── Period Banner ── */
+    .period-bar {
+      background: linear-gradient(135deg,#1E3A7A,#2a52ad);
+      color:#fff; font-size:.78rem; font-weight:600;
+      padding:.625rem 1rem;
+      display:flex; align-items:center; gap:.5rem;
+    }
+    .period-bar span { opacity:.7; font-weight:400; }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size:.7rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.06em; color:var(--text-2);
+      padding:.75rem 0 .375rem;
+    }
+
+    /* ── Brand Cards Grid ── */
+    .brand-grid {
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:.625rem;
+      margin-bottom:.75rem;
+    }
+    @media(min-width:600px){ .brand-grid{ grid-template-columns:repeat(2,1fr); } }
+
+    .brand-card {
+      background: var(--card);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      cursor:pointer;
+      transition: transform .2s, box-shadow .2s;
+      text-decoration:none;
+      display:block;
+      position:relative;
+    }
+    .brand-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+    .brand-card.locked { cursor:default; opacity:.75; }
+    .brand-card.locked:hover { transform:none; box-shadow:var(--shadow); }
+
+    .brand-card-top {
+      padding:1rem 1rem .75rem;
+      position:relative; overflow:hidden;
+      min-height:90px;
+    }
+    .brand-card-top::after {
+      content:''; position:absolute;
+      top:-30px; right:-30px;
+      width:100px; height:100px;
+      background:rgba(255,255,255,.08);
+      border-radius:50%;
+    }
+    .brand-logo-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:.5rem; }
+    .brand-name-big { font-size:1rem; font-weight:800; color:#fff; letter-spacing:.02em; }
+    .brand-status-dot {
+      width:8px; height:8px; border-radius:50%;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    .brand-status-dot.live  { background:#4ADE80; }
+    .brand-status-dot.soon  { background:rgba(255,255,255,.4); animation:none; }
+    @keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+    .brand-models { font-size:.68rem; color:rgba(255,255,255,.75); margin-bottom:.5rem; }
+
+    .brand-prog-bar {
+      height:4px; border-radius:2px;
+      background:rgba(255,255,255,.2);
+      overflow:hidden;
+    }
+    .brand-prog-fill {
+      height:100%; border-radius:2px;
+      background:#fff;
+      transition:width 1s ease;
+    }
+    .brand-prog-pct {
+      font-size:.65rem; color:rgba(255,255,255,.8);
+      font-weight:700; margin-top:.25rem;
+    }
+
+    .brand-card-bottom {
+      padding:.625rem 1rem;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand-kpi-mini { display:flex; gap:.75rem; }
+    .brand-kpi-item { }
+    .brand-kpi-label { font-size:.58rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.03em; }
+    .brand-kpi-val   { font-size:.82rem; font-weight:700; color:var(--text); }
+
+    .brand-cta {
+      font-size:.65rem; font-weight:700; color:var(--primary);
+      display:flex; align-items:center; gap:.2rem;
+      white-space:nowrap;
+    }
+    .brand-coming {
+      font-size:.65rem; font-weight:600; color:var(--text-3);
+    }
+
+    .brand-ai-tag {
+      position:absolute; top:.5rem; right:.5rem;
+      background:rgba(108,99,255,.85);
+      color:#fff; font-size:.55rem; font-weight:700;
+      padding:.15rem .4rem; border-radius:4px;
+      letter-spacing:.04em;
+      backdrop-filter:blur(4px);
+    }
+
+    /* brand colours */
+    .bg-samsung  { background:linear-gradient(135deg,#1428A0,#1B74E4); }
+    .bg-apple    { background:linear-gradient(135deg,#1d1d1f,#424245); }
+    .bg-oppo     { background:linear-gradient(135deg,#1D4ED8,#3B82F6); }
+    .bg-vivo     { background:linear-gradient(135deg,#415FFF,#818CF8); }
+    .bg-xiaomi   { background:linear-gradient(135deg,#FF6900,#FB923C); }
+    .bg-realme   { background:linear-gradient(135deg,#FFAA00,#FF6C00); }
+
+    /* ── AI Insight Highlight ── */
+    .ai-highlight {
+      background:linear-gradient(135deg,#EEF2FF,#F5F3FF);
+      border:1px solid rgba(108,99,255,.15);
+      border-radius:14px;
+      padding:1rem;
+      margin-bottom:.75rem;
+      display:flex; align-items:flex-start; gap:.75rem;
+    }
+    .ai-highlight-icon {
+      width:40px; height:40px; flex-shrink:0;
+      background:linear-gradient(135deg,#6C63FF,#9B8FFF);
+      border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.2rem;
+      box-shadow:0 4px 12px rgba(108,99,255,.3);
+    }
+    .ai-highlight-title { font-size:.875rem; font-weight:700; color:#4C4499; margin-bottom:.25rem; }
+    .ai-highlight-text  { font-size:.77rem; color:#6B7A99; line-height:1.6; }
+
+    /* ── How AI Works section ── */
+    .how-grid {
+      display:grid; grid-template-columns:repeat(2,1fr);
+      gap:.5rem; margin-bottom:.75rem;
+    }
+    .how-card {
+      background:var(--card); border-radius:12px;
+      padding:.875rem; box-shadow:var(--shadow);
+    }
+    .how-num {
+      width:28px; height:28px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.85rem; font-weight:800; color:#fff;
+      margin-bottom:.5rem;
+    }
+    .how-label { font-size:.78rem; font-weight:700; color:var(--text); margin-bottom:.2rem; }
+    .how-desc  { font-size:.68rem; color:var(--text-2); line-height:1.5; }
+
+    /* ── Gemini Setup Card ── */
+    .gemini-card {
+      background:linear-gradient(135deg,#E8F4FD,#EEF2FF);
+      border:1px solid rgba(66,133,244,.15);
+      border-radius:14px; padding:1rem;
+      margin-bottom:.75rem;
+    }
+    .gemini-header {
+      display:flex; align-items:center; gap:.625rem; margin-bottom:.625rem;
+    }
+    .gemini-logo {
+      width:36px; height:36px; border-radius:10px;
+      background:linear-gradient(135deg,#4285F4,#34A853,#FBBC05,#EA4335);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.85rem; font-weight:800; color:#fff;
+    }
+    .gemini-title { font-size:.875rem; font-weight:700; color:var(--text); }
+    .gemini-sub   { font-size:.7rem; color:var(--text-2); }
+    .gemini-free-badge {
+      display:inline-block;
+      background:#E8F5E9; color:#1B5E20;
+      font-size:.65rem; font-weight:700;
+      padding:.2rem .5rem; border-radius:6px;
+      margin-bottom:.5rem;
+    }
+    .gemini-desc { font-size:.77rem; color:var(--text-2); line-height:1.6; margin-bottom:.75rem; }
+    .gemini-setup-btn {
+      width:100%; padding:.75rem;
+      background:linear-gradient(135deg,#4285F4,#1a73e8);
+      color:#fff; border:none; border-radius:8px;
+      font-size:.82rem; font-weight:700;
+      cursor:pointer; display:flex; align-items:center;
+      justify-content:center; gap:.5rem;
+    }
+    .gemini-setup-btn:hover { opacity:.9; }
+
+    .api-key-input {
+      width:100%; padding:.75rem 1rem;
+      border:1.5px solid var(--border); border-radius:8px;
+      font-size:.82rem; color:var(--text);
+      background:var(--card); margin-bottom:.5rem;
+      font-family:var(--font);
+    }
+    .api-key-input:focus { outline:none; border-color:#4285F4; }
+    #api-key-form { display:none; margin-top:.625rem; }
+    #api-key-saved { display:none; }
+    .api-key-saved-row {
+      display:flex; align-items:center; gap:.5rem;
+      background:#E8F5E9; border-radius:8px; padding:.625rem .75rem;
+    }
+    .api-key-saved-text { font-size:.78rem; color:#1B5E20; font-weight:600; flex:1; }
+    .api-key-change {
+      font-size:.72rem; color:#4285F4; font-weight:600;
+      cursor:pointer; border:none; background:none;
+    }
+  </style>
+</head>
+<body class="app-body" style="padding-top:60px;">
+
+  <!-- HEADER -->
+  <header class="ts-header">
+    <div class="ts-header-left">
+      <div style="width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      </div>
+      <div>
+        <div class="ts-title">Target Sales</div>
+        <div class="ts-sub">Brand Performance · Region 5</div>
+      </div>
+    </div>
+    <div class="ai-badge">AI POWERED</div>
+  </header>
+
+  <main style="max-width:900px;margin:0 auto;padding:.75rem;">
+
+    <!-- Period bar -->
+    <div class="period-bar" style="border-radius:12px;margin-bottom:.75rem;">
+      📅 April 2026 &nbsp;<span>·</span>&nbsp; 12-Week Campaign &nbsp;<span>·</span>&nbsp; s/d 30 Apr 2026
+    </div>
+
+    <!-- AI Highlight -->
+    <div class="ai-highlight">
+      <div class="ai-highlight-icon">🤖</div>
+      <div>
+        <div class="ai-highlight-title">ERA-SALES AI Agent — Brand Analysis</div>
+        <div class="ai-highlight-text">Pilih brand di bawah untuk melihat <strong>Analisis AI Lengkap</strong> — Descriptive, Diagnostic, Predictive & Prescriptive — mencakup 5 Aspek: Sales, Layanan, Operation, People, dan Financial. AI ditenagai oleh <strong>Claude (Anthropic)</strong> — model AI terdepan untuk analisis bisnis.</div>
+      </div>
+    </div>
+
+    <!-- Brand Cards -->
+    <div class="section-title">Brand Target Campaign</div>
+    <div class="brand-grid">
+
+      <!-- SAMSUNG — Live -->
+      <a href="target-samsung.html" class="brand-card">
+        <div class="brand-card-top bg-samsung">
+          <div class="brand-ai-tag">AI READY</div>
+          <div class="brand-logo-row">
+            <div class="brand-name-big">SAMSUNG</div>
+            <div class="brand-status-dot live"></div>
+          </div>
+          <div class="brand-models">Galaxy A57 · A37</div>
+          <div class="brand-prog-bar">
+            <div class="brand-prog-fill" style="width:23%"></div>
+          </div>
+          <div class="brand-prog-pct">23% dari target April</div>
+        </div>
+        <div class="brand-card-bottom">
+          <div class="brand-kpi-mini">
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">12W Target</div>
+              <div class="brand-kpi-val">12.392</div>
+            </div>
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">MTD</div>
+              <div class="brand-kpi-val">1.325</div>
+            </div>
+          </div>
+          <div class="brand-cta">AI Insights <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </a>
+
+      <!-- APPLE — Coming Soon -->
+      <div class="brand-card locked">
+        <div class="brand-card-top bg-apple">
+          <div class="brand-logo-row">
+            <div class="brand-name-big">APPLE</div>
+            <div class="brand-status-dot soon"></div>
+          </div>
+          <div class="brand-models">iPhone 15 · 16 Series</div>
+          <div class="brand-prog-bar">
+            <div class="brand-prog-fill" style="width:0%"></div>
+          </div>
+          <div class="brand-prog-pct">Belum ada target</div>
+        </div>
+        <div class="brand-card-bottom">
+          <div class="brand-kpi-mini">
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">Target</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">MTD</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+          </div>
+          <div class="brand-coming">Segera hadir</div>
+        </div>
+      </div>
+
+      <!-- OPPO — Coming Soon -->
+      <div class="brand-card locked">
+        <div class="brand-card-top bg-oppo">
+          <div class="brand-logo-row">
+            <div class="brand-name-big">OPPO</div>
+            <div class="brand-status-dot soon"></div>
+          </div>
+          <div class="brand-models">Reno 12 · A60 Series</div>
+          <div class="brand-prog-bar">
+            <div class="brand-prog-fill" style="width:0%"></div>
+          </div>
+          <div class="brand-prog-pct">Belum ada target</div>
+        </div>
+        <div class="brand-card-bottom">
+          <div class="brand-kpi-mini">
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">Target</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">MTD</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+          </div>
+          <div class="brand-coming">Segera hadir</div>
+        </div>
+      </div>
+
+      <!-- VIVO — Coming Soon -->
+      <div class="brand-card locked">
+        <div class="brand-card-top bg-vivo">
+          <div class="brand-logo-row">
+            <div class="brand-name-big">VIVO</div>
+            <div class="brand-status-dot soon"></div>
+          </div>
+          <div class="brand-models">Y Series · V Series</div>
+          <div class="brand-prog-bar">
+            <div class="brand-prog-fill" style="width:0%"></div>
+          </div>
+          <div class="brand-prog-pct">Belum ada target</div>
+        </div>
+        <div class="brand-card-bottom">
+          <div class="brand-kpi-mini">
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">Target</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">MTD</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+          </div>
+          <div class="brand-coming">Segera hadir</div>
+        </div>
+      </div>
+
+      <!-- XIAOMI — Coming Soon -->
+      <div class="brand-card locked">
+        <div class="brand-card-top bg-xiaomi">
+          <div class="brand-logo-row">
+            <div class="brand-name-big">XIAOMI</div>
+            <div class="brand-status-dot soon"></div>
+          </div>
+          <div class="brand-models">Redmi Note 13 · POCO</div>
+          <div class="brand-prog-bar">
+            <div class="brand-prog-fill" style="width:0%"></div>
+          </div>
+          <div class="brand-prog-pct">Belum ada target</div>
+        </div>
+        <div class="brand-card-bottom">
+          <div class="brand-kpi-mini">
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">Target</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">MTD</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+          </div>
+          <div class="brand-coming">Segera hadir</div>
+        </div>
+      </div>
+
+      <!-- REALME — Coming Soon -->
+      <div class="brand-card locked">
+        <div class="brand-card-top bg-realme">
+          <div class="brand-logo-row">
+            <div class="brand-name-big">REALME</div>
+            <div class="brand-status-dot soon"></div>
+          </div>
+          <div class="brand-models">C Series · Number Series</div>
+          <div class="brand-prog-bar">
+            <div class="brand-prog-fill" style="width:0%"></div>
+          </div>
+          <div class="brand-prog-pct">Belum ada target</div>
+        </div>
+        <div class="brand-card-bottom">
+          <div class="brand-kpi-mini">
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">Target</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+            <div class="brand-kpi-item">
+              <div class="brand-kpi-label">MTD</div>
+              <div class="brand-kpi-val">—</div>
+            </div>
+          </div>
+          <div class="brand-coming">Segera hadir</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Cara Kerja AI -->
+    <div class="section-title">Bagaimana AI Bekerja?</div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num" style="background:linear-gradient(135deg,#1428A0,#1B74E4)">1</div>
+        <div class="how-label">Upload Target Excel</div>
+        <div class="how-desc">Admin upload file target brand (contoh: Samsung A57 & A37) ke dashboard.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num" style="background:linear-gradient(135deg,#00B894,#00CEC9)">2</div>
+        <div class="how-label">Sinkron Data Harian</div>
+        <div class="how-desc">Data Sales vs Stock B2C R5 dari email Melati otomatis tersinkron setiap hari.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num" style="background:linear-gradient(135deg,#6C63FF,#9B8FFF)">3</div>
+        <div class="how-label">AI Analisis Otomatis</div>
+        <div class="how-desc">Claude (Anthropic) membaca data, melakukan 4 metode analisis mencakup 5 aspek secara real-time.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num" style="background:linear-gradient(135deg,#FF4757,#FF6B81)">4</div>
+        <div class="how-label">Rekomendasi untuk Ops</div>
+        <div class="how-desc">AI menghasilkan rekomendasi prioritas yang bisa langsung dieksekusi oleh tim Region 5.</div>
+      </div>
+    </div>
+
+    <!-- Claude Setup -->
+    <div class="section-title">AI Engine — Claude by Anthropic</div>
+    <div class="gemini-card" style="background:linear-gradient(135deg,#F5F3FF,#EEF2FF);border-color:rgba(108,99,255,.15);">
+      <div class="gemini-header">
+        <div class="gemini-logo" style="background:linear-gradient(135deg,#6C63FF,#9B8FFF);">✦</div>
+        <div>
+          <div class="gemini-title">Claude Sonnet — Anthropic</div>
+          <div class="gemini-sub">AI Engine untuk ERA-SALES Insights</div>
+        </div>
+      </div>
+      <div class="gemini-free-badge" style="background:#EDE9FE;color:#5B21B6;">✦ API Key dikonfigurasi Admin di Netlify — Aman & Terpusat</div>
+      <div class="gemini-desc" style="margin-top:.5rem;">
+        Claude adalah model AI terdepan dari Anthropic — <strong>sangat akurat dalam analisis bisnis dan data penjualan</strong>. API Key disimpan aman di server Netlify (bukan di browser), sehingga tidak bisa dilihat atau disalahgunakan. Admin cukup set sekali di Netlify Dashboard.
+      </div>
+      <div style="background:rgba(108,99,255,.08);border-radius:10px;padding:.875rem;font-size:.78rem;color:#4C4499;line-height:1.7;">
+        <strong>Cara Setup (Admin Only):</strong><br>
+        1. Buka <strong>app.netlify.com</strong> → Site ERA-SALES → Site Settings<br>
+        2. Pilih <strong>Environment Variables</strong> → Add Variable<br>
+        3. Key: <code style="background:rgba(108,99,255,.15);padding:1px 5px;border-radius:4px;">ANTHROPIC_API_KEY</code> → Value: API Key dari console.anthropic.com<br>
+        4. Save → Redeploy → Selesai ✓
+      </div>
+    </div>
+
+    <div style="height:80px;"></div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="target-sales.html" class="nav-item active" style="position:relative;">
+      <span style="position:absolute;top:4px;right:8px;background:linear-gradient(135deg,#6C63FF,#9B8FFF);color:#fff;font-size:.45rem;font-weight:700;padding:1px 4px;border-radius:4px;">AI</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+      </svg>
+      <span>Target Sales</span>
+    </a>
+    <a href="admin.html" class="nav-item">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      <span>Admin</span>
+    </a>
+  </nav>
+
+  <script>
+    // Animate progress bars on load
+    window.addEventListener('load', () => {
+      document.querySelectorAll('.brand-prog-fill').forEach(el => {
+        const w = el.style.width;
+        el.style.width = '0%';
+        setTimeout(() => { el.style.width = w; }, 200);
+      });
+    });
+  </script>
+</body>
+</html>
