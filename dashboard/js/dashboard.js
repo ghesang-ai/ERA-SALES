@@ -2,7 +2,8 @@
 // ERA-SALES DASHBOARD — Main Dashboard Logic
 // ============================================================
 
-// ─── TSH STORE DATA (Drill-Down) ─────────────────────────────
+// ─── TSH STORE DATA (Drill-Down) — diisi dari Supabase field `stores` ──────
+// Data per-toko kini disimpan di sales_summary.stores (JSONB array per TSH)
 const TSH_STORE_DATA = {
   "ABDILLAH": [
     { code: "G402", name: "ERABLUE HOS COKROAMINOTO CILEDUG", ach: 0 },
@@ -559,7 +560,8 @@ function renderRanking(records, selectedLob) {
     }
     const barWidth = est != null ? Math.min((est / maxEst) * 100, 100).toFixed(1) : 0;
 
-    const hasDrilldown = !isLob && TSH_STORE_DATA.hasOwnProperty(name);
+    const storeData = (r.stores && r.stores.length > 0) ? r.stores : (TSH_STORE_DATA[name] || []);
+    const hasDrilldown = !isLob && storeData.length > 0;
 
     const div = document.createElement('div');
     div.className = 'ranking-item' + (isLob ? ' is-lob' : '') + (hasDrilldown ? ' has-drilldown' : '');
@@ -588,11 +590,11 @@ function renderRanking(records, selectedLob) {
       panel.className = 'tsh-drilldown-panel';
       panel.dataset.tsh = name;
 
-      const stores = TSH_STORE_DATA[name];
+      const stores = storeData;
       const rows = stores.map((s, i) => {
-        const achPct = s.ach;
+        const achPct = s.ach || 0;
         const achStr = achPct > 0
-          ? `<span class="store-ach-pos">${achPct.toFixed ? achPct.toFixed(0) : achPct}%</span>`
+          ? `<span class="store-ach-pos">${achPct.toFixed(1)}%</span>`
           : `<span class="store-ach-zero">0%</span>`;
         return `
           <tr class="${i % 2 === 0 ? 'row-even' : 'row-odd'}">
