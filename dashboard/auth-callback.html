@@ -66,19 +66,23 @@
         .single();
 
       if (!profile) {
-        // Buat profil baru dengan status pending
+        // Buat profil baru — status default 'pending' dari database
         const pendingName  = localStorage.getItem('era_pending_name') || authUser.email.split('@')[0];
         const pendingEmail = authUser.email;
         localStorage.removeItem('era_pending_name');
         localStorage.removeItem('era_pending_email');
 
-        await supabaseClient.from('user_profiles').insert({
+        const { error: insertErr } = await supabaseClient.from('user_profiles').insert({
           id:        authUser.id,
           email:     pendingEmail,
           full_name: pendingName,
-          role:      'tsh',
-          status:    'pending'
+          role:      'tsh'
         });
+
+        if (insertErr) {
+          console.error('Gagal buat profil:', insertErr.message);
+          // Tetap redirect ke pending — admin bisa buat profil manual
+        }
 
         window.location.href = 'pending.html';
         return;
