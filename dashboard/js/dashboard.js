@@ -309,10 +309,13 @@ let userProfile = null;
 let activeLob   = 'SEMUA';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Pastikan Supabase client sudah siap
+  // Tunggu supabaseClient selesai diinisialisasi oleh config.js
   await new Promise(r => setTimeout(r, 100));
 
-  // Tidak perlu login — dashboard bisa diakses siapa saja
+  // Auth guard — redirect ke index.html jika belum login / belum approved
+  const user = await requireApproved();
+  if (!user) return;
+
   initBottomNav();
   initDesktopNav();
 
