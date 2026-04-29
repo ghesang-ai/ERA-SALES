@@ -38,25 +38,15 @@ async function getCurrentUser() {
   return profile ? { ...user, profile } : null;
 }
 
-// Guard: redirect ke login jika belum login
-async function requireAuth() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) {
-    window.location.href = 'index.html';
-    return null;
-  }
-  return session;
-}
-
 // Guard: hanya admin yang boleh masuk
 async function requireAdmin() {
   const user = await getCurrentUser();
   if (!user) {
-    window.location.href = 'index.html';
+    window.location.href = 'admin-login.html';
     return null;
   }
   if (!user.profile || user.profile.role !== 'admin') {
-    window.location.href = 'dashboard.html';
+    window.location.href = 'admin-login.html';
     return null;
   }
   return user;

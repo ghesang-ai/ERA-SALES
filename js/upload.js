@@ -6,6 +6,9 @@ let parsedData = null;
 let selectedFile = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const user = await requireAdmin();
+  if (!user) return;
+
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('admin-content').classList.remove('hidden');
 

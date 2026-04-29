@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1E3A7A" />
+  <title>ERA-SALES — Admin Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="login-body">
+
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="brand-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect width="48" height="48" rx="12" fill="#1E3A7A"/>
+          <path d="M12 34L20 22L26 28L32 18L36 22" stroke="#F6B93B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="36" cy="14" r="3" fill="#F6B93B"/>
+        </svg>
+      </div>
+      <h1 class="brand-name">ERA-SALES</h1>
+      <p class="brand-sub">PANEL ADMIN</p>
+    </div>
+
+    <div class="login-card" id="login-form-card">
+      <h2 class="login-title">Login Admin</h2>
+      <p class="login-desc">Masukkan email admin untuk menerima magic link login.</p>
+      <div class="login-form">
+        <input
+          type="email"
+          id="email-input"
+          class="login-input"
+          placeholder="Email admin"
+          autocomplete="email"
+          inputmode="email"
+        />
+        <button class="btn btn-primary btn-full" id="send-btn">Kirim</button>
+      </div>
+      <div id="login-error" class="error-banner hidden"></div>
+    </div>
+
+    <div class="login-card hidden" id="success-card" style="text-align:center;">
+      <div style="font-size:3rem;margin-bottom:1rem;">📧</div>
+      <h2 class="login-title">Cek Email Anda</h2>
+      <p class="login-desc">Magic link sudah dikirim. Klik link di email untuk masuk ke panel admin.</p>
+      <button class="btn btn-outline btn-full" id="resend-btn" style="margin-top:1.5rem;">Kirim Ulang</button>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Kalau sudah login sebagai admin, langsung masuk
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        const user = await getCurrentUser();
+        if (user && user.profile && user.profile.role === 'admin') {
+          window.location.href = 'admin.html';
+          return;
+        }
+      }
+
+      const sendBtn  = document.getElementById('send-btn');
+      const resendBtn = document.getElementById('resend-btn');
+      const emailInput = document.getElementById('email-input');
+      const errorDiv   = document.getElementById('login-error');
+
+      async function doSend() {
+        const email = emailInput ? emailInput.value.trim() : '';
+        if (!email) {
+          errorDiv.textContent = 'Masukkan email terlebih dahulu.';
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Mengirim...';
+        errorDiv.classList.add('hidden');
+
+        const result = await sendMagicLink(email);
+        if (result.success) {
+          document.getElementById('login-form-card').classList.add('hidden');
+          document.getElementById('success-card').classList.remove('hidden');
+        } else {
+          errorDiv.textContent = result.error || 'Gagal mengirim email. Coba lagi.';
+          errorDiv.classList.remove('hidden');
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Kirim';
+        }
+      }
+
+      sendBtn.addEventListener('click', doSend);
+      emailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+
+      resendBtn.addEventListener('click', () => {
+        document.getElementById('success-card').classList.add('hidden');
+        document.getElementById('login-form-card').classList.remove('hidden');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Kirim';
+      });
+    });
+  </script>
+</body>
+</html>
