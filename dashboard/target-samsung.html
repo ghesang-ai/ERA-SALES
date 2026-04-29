@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -711,7 +712,7 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
     }, 1800);
 
     try {
-      const res = await fetch('/.netlify/functions/ai-insights', {
+      const res = await fetch('/.netlify/functions/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: buildPrompt(), brand: 'Samsung', week: 'April 2026' }),
