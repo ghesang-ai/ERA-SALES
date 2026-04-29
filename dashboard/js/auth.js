@@ -37,7 +37,11 @@ async function getCurrentUser() {
 }
 
 // Guard: hanya user approved atau admin yang bisa lihat dashboard
+// Mode login dikontrol Admin via toggle di Panel Admin → Pengaturan
 async function requireApproved() {
+  if (localStorage.getItem('era_login_required') === 'off') {
+    return { id: 'preview', email: 'preview@erasales.local', profile: { role: 'admin', status: 'approved', full_name: 'Preview Mode' } };
+  }
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return null; }
 

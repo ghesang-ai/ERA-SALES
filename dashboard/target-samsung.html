@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1428A0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>AI Insights — Samsung A57 & A37 Region 5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Samsung AI Insights Custom Styles ── */
+    :root {
+      --sam-blue:   #1428A0;
+      --sam-light:  #1B74E4;
+      --sam-accent: #36C5F0;
+      --ai-purple:  #6C63FF;
+      --ai-purple2: #9B8FFF;
+    }
+
+    .sam-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(135deg, #1428A0 0%, #1B74E4 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(20,40,160,0.3);
+    }
+    .sam-header-left { display: flex; align-items: center; gap: 0.625rem; }
+    .sam-back-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; cursor: pointer; border: none;
+      transition: background 0.2s;
+    }
+    .sam-back-btn:hover { background: rgba(255,255,255,0.25); }
+    .sam-header-title { font-size: 0.95rem; font-weight: 700; color: #fff; }
+    .sam-header-sub { font-size: 0.65rem; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.05em; }
+    .ai-badge {
+      background: linear-gradient(135deg, #6C63FF, #9B8FFF);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.25rem 0.625rem;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+      animation: pulse-ai 2s ease-in-out infinite;
+    }
+    @keyframes pulse-ai {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(108,99,255,0); }
+    }
+
+    /* ── Hero Banner ── */
+    .sam-hero {
+      background: linear-gradient(135deg, #1428A0 0%, #1B74E4 70%, #36C5F0 100%);
+      padding: 1.5rem 1rem 2rem;
+      margin-bottom: -1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .sam-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .sam-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -20px; left: -20px;
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .hero-brand-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .samsung-logo {
+      font-size: 1.1rem; font-weight: 800;
+      color: #fff; letter-spacing: 0.04em;
+      background: rgba(255,255,255,0.15);
+      padding: 0.3rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    .hero-model-tag {
+      font-size: 0.75rem; color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+    .hero-title {
+      font-size: 1.25rem; font-weight: 800;
+      color: #fff; line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .hero-sub {
+      font-size: 0.8rem; color: rgba(255,255,255,0.7);
+    }
+    .hero-sync-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .sync-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .sync-text { font-size: 0.72rem; color: rgba(255,255,255,0.75); }
+    .sync-btn {
+      margin-left: auto;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 0.7rem; font-weight: 600;
+      padding: 0.25rem 0.625rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sync-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── KPI Cards ── */
+    .kpi-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.625rem;
+      margin-bottom: 0.75rem;
+    }
+    .kpi-card-sam {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card-sam::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-card-sam.blue::before  { background: linear-gradient(90deg, #1428A0, #1B74E4); }
+    .kpi-card-sam.green::before { background: linear-gradient(90deg, #00B894, #00CEC9); }
+    .kpi-card-sam.orange::before{ background: linear-gradient(90deg, #FFA502, #FF6B35); }
+    .kpi-card-sam.purple::before{ background: linear-gradient(90deg, #6C63FF, #9B8FFF); }
+    .kpi-card-sam .kpi-label { font-size: 0.68rem; color: var(--text-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.375rem; }
+    .kpi-card-sam .kpi-val  { font-size: 1.4rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .kpi-card-sam .kpi-sub  { font-size: 0.68rem; color: var(--text-3); margin-top: 0.25rem; }
+    .kpi-card-sam .kpi-badge {
+      display: inline-block;
+      font-size: 0.65rem; font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      margin-top: 0.375rem;
+    }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); }
+    .badge-warning { background: var(--warning-bg); color: var(--warning); }
+    .badge-success { background: var(--success-bg); color: var(--success); }
+
+    /* ── Week Progress ── */
+    .week-tabs {
+      display: flex; gap: 0.5rem;
+      background: var(--card);
+      border-radius: 10px;
+      padding: 0.375rem;
+      margin-bottom: 0.75rem;
+      box-shadow: var(--shadow);
+    }
+    .week-tab {
+      flex: 1;
+      padding: 0.5rem 0.25rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.7rem; font-weight: 600;
+      color: var(--text-2);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .week-tab.active {
+      background: linear-gradient(135deg, #1428A0, #1B74E4);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(20,40,160,0.3);
+    }
+
+    .week-panel { display: none; }
+    .week-panel.active { display: block; }
+
+    /* ── Per-TSH List ── */
+    .tsh-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tsh-item:last-child { border-bottom: none; }
+    .tsh-rank {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700;
+      color: var(--text-2);
+      flex-shrink: 0;
+    }
+    .tsh-rank.top { background: #FFF3CD; color: #856404; }
+    .tsh-rank.danger { background: var(--danger-bg); color: var(--danger); }
+    .tsh-info { flex: 1; min-width: 0; }
+    .tsh-name { font-size: 0.8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tsh-target { font-size: 0.68rem; color: var(--text-3); }
+    .tsh-progress-wrap { width: 80px; }
+    .tsh-bar {
+      height: 6px; border-radius: 3px;
+      background: var(--border);
+      overflow: hidden;
+      margin-bottom: 0.25rem;
+    }
+    .tsh-bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #1428A0, #1B74E4);
+      transition: width 0.8s ease;
+    }
+    .tsh-bar-fill.good { background: linear-gradient(90deg, #00B894, #00CEC9); }
+    .tsh-bar-fill.warn { background: linear-gradient(90deg, #FFA502, #FF6B35); }
+    .tsh-bar-fill.bad  { background: linear-gradient(90deg, #FF4757, #FF6B81); }
+    .tsh-pct { font-size: 0.72rem; font-weight: 700; text-align: right; }
+    .tsh-pct.good { color: var(--success); }
+    .tsh-pct.warn { color: var(--warning); }
+    .tsh-pct.bad  { color: var(--danger); }
+
+    /* ── Analysis Tabs ── */
+    .analysis-tabs {
+      display: flex; gap: 0; overflow-x: auto;
+      background: var(--card);
+      border-radius: 12px 12px 0 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 0;
+      scrollbar-width: none;
+    }
+    .analysis-tabs::-webkit-scrollbar { display: none; }
+    .analysis-tab {
+      flex-shrink: 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--text-2);
+      border: none; background: transparent;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .analysis-tab.active {
+      color: var(--sam-blue);
+      border-bottom-color: var(--sam-blue);
+    }
+    .analysis-content {
+      background: var(--card);
+      border-radius: 0 0 12px 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      box-shadow: var(--shadow);
+    }
+    .analysis-panel { display: none; }
+    .analysis-panel.active { display: block; }
+    .analysis-method-title {
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--sam-blue); margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .method-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .method-icon.desc  { background: #EEF2FF; }
+    .method-icon.diag  { background: #FFF3CD; }
+    .method-icon.pred  { background: #E8F8F5; }
+    .method-icon.pres  { background: #FFF0F1; }
+
+    .insight-row {
+      display: flex; gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding: 0.75rem;
+      background: var(--bg);
+      border-radius: 10px;
+      border-left: 3px solid var(--border);
+    }
+    .insight-row.blue   { border-left-color: var(--sam-blue); }
+    .insight-row.green  { border-left-color: var(--success); }
+    .insight-row.orange { border-left-color: var(--warning); }
+    .insight-row.red    { border-left-color: var(--danger); }
+    .insight-row.purple { border-left-color: var(--ai-purple); }
+    .insight-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .insight-text { font-size: 0.8rem; color: var(--text); line-height: 1.6; }
+    .insight-text strong { color: var(--text); font-weight: 700; }
+
+    /* ── 5 Aspek Accordion ── */
+    .aspek-title {
+      font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-2);
+      padding: 0.5rem 0; margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .aspek-card {
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 0.625rem;
+      box-shadow: var(--shadow);
+    }
+    .aspek-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 1rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .aspek-header:hover { background: var(--bg); }
+    .aspek-num {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 800; color: #fff;
+      flex-shrink: 0;
+    }
+    .aspek-num.s1 { background: linear-gradient(135deg, #1428A0, #1B74E4); }
+    .aspek-num.s2 { background: linear-gradient(135deg, #00B894, #00CEC9); }
+    .aspek-num.s3 { background: linear-gradient(135deg, #FFA502, #FF6B35); }
+    .aspek-num.s4 { background: linear-gradient(135deg, #6C63FF, #9B8FFF); }
+    .aspek-num.s5 { background: linear-gradient(135deg, #FF4757, #FF6B81); }
+    .aspek-label { flex: 1; }
+    .aspek-name { font-size: 0.875rem; font-weight: 700; color: var(--text); }
+    .aspek-sub  { font-size: 0.7rem; color: var(--text-2); }
+    .aspek-chevron {
+      color: var(--text-3);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+    .aspek-card.open .aspek-chevron { transform: rotate(180deg); }
+    .aspek-body {
+      display: none;
+      padding: 0 1rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .aspek-card.open .aspek-body { display: block; }
+    .aspek-metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .aspek-metric {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    .aspek-metric-label { font-size: 0.65rem; color: var(--text-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.25rem; }
+    .aspek-metric-val   { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .aspek-metric-note  { font-size: 0.65rem; color: var(--text-3); margin-top: 0.1rem; }
+
+    /* ── AI Recommendations ── */
+    .ai-rec-header {
+      display: flex; align-items: center; gap: 0.625rem;
+      margin-bottom: 0.75rem;
+    }
+    .ai-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6C63FF, #9B8FFF);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 12px rgba(108,99,255,0.3);
+    }
+    .ai-rec-title { font-size: 1rem; font-weight: 800; color: var(--text); }
+    .ai-rec-sub   { font-size: 0.72rem; color: var(--text-2); }
+    .rec-item {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.625rem;
+      border-left: 4px solid;
+      position: relative;
+      overflow: hidden;
+    }
+    .rec-item.priority-1 { border-left-color: #FF4757; }
+    .rec-item.priority-2 { border-left-color: #FFA502; }
+    .rec-item.priority-3 { border-left-color: #1B74E4; }
+    .rec-item.priority-4 { border-left-color: #00B894; }
+    .rec-item.priority-5 { border-left-color: #6C63FF; }
+    .rec-priority {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 0.375rem;
+      display: flex; align-items: center; gap: 0.375rem;
+    }
+    .rec-priority-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .p1-dot { background: #FF4757; }
+    .p2-dot { background: #FFA502; }
+    .p3-dot { background: #1B74E4; }
+    .p4-dot { background: #00B894; }
+    .p5-dot { background: #6C63FF; }
+    .rec-text    { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 0.375rem; }
+    .rec-detail  { font-size: 0.77rem; color: var(--text-2); line-height: 1.6; }
+    .rec-aspek-tag {
+      display: inline-block;
+      font-size: 0.6rem; font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      background: rgba(20,40,160,0.08);
+      color: var(--sam-blue);
+      margin-top: 0.375rem;
+    }
+
+    /* ── Upload Integration Card ── */
+    .sync-card {
+      background: linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 100%);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(20,40,160,0.1);
+    }
+    .sync-card-title {
+      font-size: 0.8rem; font-weight: 700;
+      color: var(--sam-blue); margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.375rem;
+    }
+    .sync-card-body { font-size: 0.77rem; color: var(--text-2); line-height: 1.6; }
+    .sync-upload-btn {
+      width: 100%;
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, #1428A0, #1B74E4);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.82rem; font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      transition: opacity 0.2s;
+    }
+    .sync-upload-btn:hover { opacity: 0.9; }
+    .file-input { display: none; }
+
+    /* ── Loading AI ── */
+    .ai-loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 2rem;
+      text-align: center;
+    }
+    .ai-spinner {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 3px solid rgba(108,99,255,0.2);
+      border-top-color: #6C63FF;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-loading-text { font-size: 0.85rem; color: var(--text-2); font-weight: 500; }
+
+    /* ── Responsive ── */
+    @media (min-width: 600px) {
+      .kpi-grid-4 { grid-template-columns: repeat(4, 1fr); }
+      .aspek-metric-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body class="app-body" style="padding-top:60px;">
+
+  <!-- HEADER -->
+  <header class="sam-header">
+    <div class="sam-header-left">
+      <button class="sam-back-btn" onclick="history.back()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <div>
+        <div class="sam-header-title">AI Insights — Samsung</div>
+        <div class="sam-header-sub">A57 & A37 · Region 5 · April 2026</div>
+      </div>
+    </div>
+    <div class="ai-badge">AI POWERED</div>
+  </header>
+
+  <!-- MAIN -->
+  <main style="max-width:900px;margin:0 auto;">
+
+    <!-- HERO -->
+    <div class="sam-hero">
+      <div class="hero-brand-row">
+        <span class="samsung-logo">SAMSUNG</span>
+        <span class="hero-model-tag">Galaxy A57 & A37</span>
+      </div>
+      <div class="hero-title">Target Sales Analysis<br>Region 5 — April 2026</div>
+      <div class="hero-sub">12-Week Campaign · Powered by ERA-SALES AI Agent</div>
+      <div class="hero-sync-row">
+        <span class="sync-dot"></span>
+        <span class="sync-text">Last sync: 30 Apr 2026, 08.15 WIB · Sales vs Stock B2C R5</span>
+        <button class="sync-btn" id="sync-btn" onclick="doSync()">↻ Sync</button>
+      </div>
+    </div>
+
+    <div style="padding:0.75rem;">
+
+      <!-- KPI CARDS -->
+      <div class="kpi-grid-4">
+        <div class="kpi-card-sam blue">
+          <div class="kpi-label">12W Target</div>
+          <div class="kpi-val">12.392</div>
+          <div class="kpi-sub">unit A57+A37</div>
+        </div>
+        <div class="kpi-card-sam orange">
+          <div class="kpi-label">MTD Achieved</div>
+          <div class="kpi-val">1.325</div>
+          <div class="kpi-sub">unit s/d 27 Apr</div>
+          <span class="kpi-badge badge-warning">23.1% of Apr Target</span>
+        </div>
+        <div class="kpi-card-sam purple">
+          <div class="kpi-label">Projected EOM</div>
+          <div class="kpi-val">~1.472</div>
+          <div class="kpi-sub">estimasi akhir April</div>
+          <span class="kpi-badge badge-danger">Gap: -4.267 unit</span>
+        </div>
+        <div class="kpi-card-sam green">
+          <div class="kpi-label">TSH Terbaik</div>
+          <div class="kpi-val">32%</div>
+          <div class="kpi-sub">Liastuti</div>
+          <span class="kpi-badge badge-success">Top Performer</span>
+        </div>
+      </div>
+
+      <!-- WEEK PROGRESS TABS -->
+      <div class="card" style="margin-bottom:0.75rem;">
+        <div class="card-header">
+          <h3 class="card-title">Progress per Minggu</h3>
+          <span class="card-badge">Samsung A57 & A37</span>
+        </div>
+        <div class="week-tabs">
+          <button class="week-tab active" data-week="1" onclick="switchWeek(1)">W1 (1–19 Apr)</button>
+          <button class="week-tab" data-week="2" onclick="switchWeek(2)">W2 (20–26 Apr)</button>
+          <button class="week-tab" data-week="3" onclick="switchWeek(3)">W3 (27 Apr+)</button>
+        </div>
+
+        <!-- Week 1 Panel -->
+        <div class="week-panel active" id="week-panel-1">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;margin-bottom:1rem;">
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;text-align:center;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;">A57 — W1</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--text);">691</div>
+              <div style="font-size:0.7rem;color:var(--text-3);">dari 2.740 target</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--warning);">25%</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;text-align:center;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;">A37 — W1</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--text);">233</div>
+              <div style="font-size:0.7rem;color:var(--text-3);">dari 1.091 target</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--danger);">21%</div>
+            </div>
+          </div>
+          <div id="tsh-list-w1"></div>
+        </div>
+
+        <!-- Week 2 Panel -->
+        <div class="week-panel" id="week-panel-2">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;margin-bottom:1rem;">
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;text-align:center;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;">A57 — W2</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--text);">248</div>
+              <div style="font-size:0.7rem;color:var(--text-3);">dari 728 target</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--warning);">34%</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;text-align:center;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;">A37 — W2</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--text);">111</div>
+              <div style="font-size:0.7rem;color:var(--text-3);">dari 302 target</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--warning);">37%</div>
+            </div>
+          </div>
+          <div id="tsh-list-w2"></div>
+        </div>
+
+        <!-- Week 3 Panel -->
+        <div class="week-panel" id="week-panel-3">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;margin-bottom:1rem;">
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;text-align:center;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;">A57 — W3</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--text);">25</div>
+              <div style="font-size:0.7rem;color:var(--text-3);">dari 653 target</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--danger);">4%</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;text-align:center;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;">A37 — W3</div>
+              <div style="font-size:1.5rem;font-weight:800;color:var(--text);">17</div>
+              <div style="font-size:0.7rem;color:var(--text-3);">dari 225 target</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--danger);">8%</div>
+            </div>
+          </div>
+          <div id="tsh-list-w3"></div>
+        </div>
+      </div>
+
+      <!-- AI ANALYSIS SECTION -->
+      <div class="card" style="padding:0;margin-bottom:0.75rem;overflow:hidden;">
+        <div style="padding:1rem 1rem 0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.625rem;">
+            <div class="ai-icon">🤖</div>
+            <div>
+              <div style="font-size:0.95rem;font-weight:800;color:var(--text);">AI Analysis Engine</div>
+              <div style="font-size:0.72rem;color:var(--text-2);">4 Metode · Data per 30 Apr 2026</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analysis-tabs">
+          <button class="analysis-tab active" onclick="switchAnalysis('descriptive', this)">📊 Descriptive</button>
+          <button class="analysis-tab" onclick="switchAnalysis('diagnostic', this)">🔍 Diagnostic</button>
+          <button class="analysis-tab" onclick="switchAnalysis('predictive', this)">📈 Predictive</button>
+          <button class="analysis-tab" onclick="switchAnalysis('prescriptive', this)">🎯 Prescriptive</button>
+        </div>
+
+        <div class="analysis-content">
+
+          <!-- DESCRIPTIVE -->
+          <div class="analysis-panel active" id="analysis-descriptive">
+            <div class="analysis-method-title">
+              <div class="method-icon desc">📊</div>
+              Descriptive Analysis — Apa yang Terjadi?
+            </div>
+            <div class="insight-row blue">
+              <span class="insight-icon">📦</span>
+              <div class="insight-text">
+                <strong>Total terjual MTD (s/d 27 Apr):</strong> 1.325 unit (A57: 964 unit · A37: 361 unit) dari total target April 5.739 unit. Achievement keseluruhan baru <strong>23.1%</strong> dari target bulan ini.
+              </div>
+            </div>
+            <div class="insight-row blue">
+              <span class="insight-icon">📅</span>
+              <div class="insight-text">
+                <strong>12-Week Campaign:</strong> Target total 12,392 unit (A57: 8.783 · A37: 3.609). Dengan pencapaian saat ini, campaign baru terisi <strong>10.7%</strong> dari total target 12 minggu.
+              </div>
+            </div>
+            <div class="insight-row green">
+              <span class="insight-icon">🏆</span>
+              <div class="insight-text">
+                <strong>Top TSH Performers:</strong> Liastuti (32% ach) · Rendy Nur Setiawan (31% ach) · Nurul Zaman (28%) · Lim Ping Kian (27%). Keempat TSH ini adalah <strong>tulang punggung</strong> pencapaian Region 5.
+              </div>
+            </div>
+            <div class="insight-row orange">
+              <span class="insight-icon">⚠️</span>
+              <div class="insight-text">
+                <strong>TSH Underperforming:</strong> EDC (8%) · Abdillah (10%) · Mensi Alexander (12%) · Rendi Januardi (13%) · Eka Puji Chaerul Anwar (15%). Total 5 TSH ini masih jauh di bawah rata-rata region.
+              </div>
+            </div>
+            <div class="insight-row blue">
+              <span class="insight-icon">📈</span>
+              <div class="insight-text">
+                <strong>Tren Mingguan:</strong> W1 (25% A57, 21% A37) → W2 (34% A57, 37% A37) → W3 (4% A57, 8% A37). Terdapat <strong>lonjakan positif di W2</strong> namun W3 drop signifikan karena hanya 1 hari pelaporan.
+              </div>
+            </div>
+          </div>
+
+          <!-- DIAGNOSTIC -->
+          <div class="analysis-panel" id="analysis-diagnostic">
+            <div class="analysis-method-title">
+              <div class="method-icon diag">🔍</div>
+              Diagnostic Analysis — Mengapa Terjadi?
+            </div>
+            <div class="insight-row red">
+              <span class="insight-icon">🚨</span>
+              <div class="insight-text">
+                <strong>Gap Achievement 77%:</strong> Target April 5.739 unit vs achieved 1.325 unit. Root cause: target W1 terlalu tinggi (2.740 A57) untuk 19 hari pertama — hanya 25.2% tercapai. Ini mengindikasikan <strong>target overestimated</strong> atau distribusi stok tidak merata.
+              </div>
+            </div>
+            <div class="insight-row orange">
+              <span class="insight-icon">📉</span>
+              <div class="insight-text">
+                <strong>TSH Abdillah & Rendi Januardi Critical:</strong> Abdillah mencapai hanya 10% (35 dari 344 target MTD). Rendi Januardi 13% (72 dari 561 target). Kedua TSH ini memiliki <strong>jumlah toko terbanyak</strong> (12 dan 28 toko) namun productivity per toko sangat rendah.
+              </div>
+            </div>
+            <div class="insight-row orange">
+              <span class="insight-icon">🏪</span>
+              <div class="insight-text">
+                <strong>Mensi Alexander (5% A57 W1):</strong> Hanya 3 unit A57 di W1 dari target 60 unit. Kemungkinan <strong>stok kosong</strong>, display problem, atau kurangnya pengetahuan produk SA di store ERABLUE area tersebut.
+              </div>
+            </div>
+            <div class="insight-row purple">
+              <span class="insight-icon">💡</span>
+              <div class="insight-text">
+                <strong>Pola EDC (8%):</strong> Channel EDC memiliki target kecil (57 unit 12W) namun realisasi sangat rendah (2 unit MTD). Ini bisa jadi indikasi <strong>channel activation yang belum optimal</strong> atau sistem pencatatan yang berbeda.
+              </div>
+            </div>
+            <div class="insight-row green">
+              <span class="insight-icon">✅</span>
+              <div class="insight-text">
+                <strong>Rachmat Cluster (29%):</strong> Cluster Rachmat dengan 3.413 target A57 berhasil mencapai 454 unit A57 MTD (29%). Faktor sukses: <strong>store count tinggi, Liastuti & Lim Ping Kian</strong> sebagai sub-TSH berkinerja baik ada di kluster ini.
+              </div>
+            </div>
+          </div>
+
+          <!-- PREDICTIVE -->
+          <div class="analysis-panel" id="analysis-predictive">
+            <div class="analysis-method-title">
+              <div class="method-icon pred">📈</div>
+              Predictive Analysis — Apa yang Akan Terjadi?
+            </div>
+            <div class="insight-row blue">
+              <span class="insight-icon">🔮</span>
+              <div class="insight-text">
+                <strong>Proyeksi Akhir April:</strong> Daily run rate MTD = 1.325 ÷ 27 hari = <strong>49 unit/hari</strong>. Sisa 3 hari (28–30 Apr) × 49 = 147 unit tambahan. <strong>Prediksi total April: ~1.472 unit</strong> (gap -4.267 unit dari target April).
+              </div>
+            </div>
+            <div class="insight-row red">
+              <span class="insight-icon">⛔</span>
+              <div class="insight-text">
+                <strong>12W Campaign Outlook KRITIS:</strong> Target 12W = 12.392 unit. Jika run rate April (49 unit/hari) bertahan, butuh <strong>~253 hari</strong> untuk mencapai target. Diperlukan akselerasi <strong>5–6x lipat</strong> di Mei–Juni untuk back on track.
+              </div>
+            </div>
+            <div class="insight-row orange">
+              <span class="insight-icon">📊</span>
+              <div class="insight-text">
+                <strong>Proyeksi per TSH Berisiko Tinggi:</strong> Abdillah projected EOM: ~39 unit vs target 344 (11%). Rendi Januardi projected: ~80 unit vs 561 (14%). Kedua TSH ini perlu <strong>intervensi segera</strong> untuk Mei agar tidak terus melebar gapnya.
+              </div>
+            </div>
+            <div class="insight-row green">
+              <span class="insight-icon">🚀</span>
+              <div class="insight-text">
+                <strong>TSH dengan Momentum Positif:</strong> Rendy Nur Setiawan (31% ach) dan Nurul Zaman (28%) menunjukkan tren naik W1→W2. Jika diperkuat, keduanya berpotensi mencapai <strong>35–40% achievement</strong> di Mei.
+              </div>
+            </div>
+            <div class="insight-row purple">
+              <span class="insight-icon">🎯</span>
+              <div class="insight-text">
+                <strong>Model Skenario Catch-Up:</strong> Untuk mencapai 50% dari target 12W di akhir Mei, dibutuhkan <strong>178 unit/hari</strong> selama 30 hari Mei. Ini feasible jika program insentif Samsung diaktifkan dan stok tersedia penuh.
+              </div>
+            </div>
+          </div>
+
+          <!-- PRESCRIPTIVE -->
+          <div class="analysis-panel" id="analysis-prescriptive">
+            <div class="analysis-method-title">
+              <div class="method-icon pres">🎯</div>
+              Prescriptive Analysis — Apa yang Harus Dilakukan?
+            </div>
+            <div class="insight-row red">
+              <span class="insight-icon">🚨</span>
+              <div class="insight-text">
+                <strong>URGENT — Abdillah & Rendi Januardi:</strong> Lakukan <strong>store visit harian</strong> oleh TSH, cek stok A57/A37 di masing-masing toko, pastikan display Samsung terlihat dan SA briefed tentang USP produk. Target minimum 5 unit/toko/minggu.
+              </div>
+            </div>
+            <div class="insight-row orange">
+              <span class="insight-icon">💰</span>
+              <div class="insight-text">
+                <strong>Aktivasi Promo Financing:</strong> TSH dengan achievement rendah (Mensi, Eka) harus mendorong SA menggunakan <strong>Promo App untuk kredit Samsung</strong>. Konversi dengan cicilan 0% terbukti meningkatkan closing rate 2–3x di TSH berkinerja baik.
+              </div>
+            </div>
+            <div class="insight-row blue">
+              <span class="insight-icon">🏆</span>
+              <div class="insight-text">
+                <strong>Replikasi Best Practice:</strong> Undang Liastuti (32%) dan Rendy Nur Setiawan (31%) untuk <strong>share session</strong> dengan TSH underperforming. Dokumentasikan teknik selling dan promo mereka sebagai SOP baru Region 5.
+              </div>
+            </div>
+            <div class="insight-row purple">
+              <span class="insight-icon">📦</span>
+              <div class="insight-text">
+                <strong>Pastikan Stok Terdistribusi Merata:</strong> Koordinasi dengan Samsung CM untuk <strong>realokasi stok</strong> dari toko berkelebihan ke toko yang demand-nya tinggi namun stok kosong. Prioritaskan area Abdillah dan Rendi Januardi.
+              </div>
+            </div>
+            <div class="insight-row green">
+              <span class="insight-icon">📅</span>
+              <div class="insight-text">
+                <strong>Action Plan Mei 2026:</strong> Set target mingguan per TSH dengan checkpoint setiap Senin. Buat <strong>war room</strong> Samsung khusus A57 & A37 dengan review mingguan bersama Pak Andre. KPI: minimum 30% catch-up dari gap April.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 5 ASPEK -->
+      <div class="card" style="margin-bottom:0.75rem;">
+        <div class="card-header">
+          <h3 class="card-title">5 Aspek Evaluasi</h3>
+          <span class="card-badge" style="background:linear-gradient(135deg,#6C63FF,#9B8FFF);color:#fff;">AI Insight</span>
+        </div>
+        <div style="padding:0 0 0.5rem;">
+
+          <!-- Aspek 1: Sales -->
+          <div class="aspek-card open" id="aspek-1">
+            <div class="aspek-header" onclick="toggleAspek('aspek-1')">
+              <div class="aspek-num s1">1</div>
+              <div class="aspek-label">
+                <div class="aspek-name">Sales</div>
+                <div class="aspek-sub">MoM · YTD · Achievement</div>
+              </div>
+              <svg class="aspek-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="aspek-body">
+              <div class="aspek-metric-grid">
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">MTD Samsung</div>
+                  <div class="aspek-metric-val" style="color:#1428A0;">1.325</div>
+                  <div class="aspek-metric-note">unit A57+A37</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Target April</div>
+                  <div class="aspek-metric-val">5.739</div>
+                  <div class="aspek-metric-note">unit (W1+W2+W3)</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">MoM (vs Maret)</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">–</div>
+                  <div class="aspek-metric-note">data Maret diperlukan</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">YTD 2026</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">–</div>
+                  <div class="aspek-metric-note">Jan–Apr agregat</div>
+                </div>
+              </div>
+              <div class="insight-row blue" style="margin-top:0.75rem;margin-bottom:0;">
+                <span class="insight-icon">💡</span>
+                <div class="insight-text"><strong>AI Insight:</strong> Achievement 23.1% menunjukkan momentum awal yang rendah. Dengan 3 hari sisa April, realistis target bulan ini tidak akan tercapai. Fokus harus dialihkan ke <strong>catchup strategy Mei</strong> dengan target minimum 3.000 unit/bulan untuk menyelamatkan 12W campaign.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aspek 2: Layanan -->
+          <div class="aspek-card" id="aspek-2">
+            <div class="aspek-header" onclick="toggleAspek('aspek-2')">
+              <div class="aspek-num s2">2</div>
+              <div class="aspek-label">
+                <div class="aspek-name">Layanan</div>
+                <div class="aspek-sub">CSI · Product Knowledge · Complaint · Promo</div>
+              </div>
+              <svg class="aspek-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="aspek-body">
+              <div class="aspek-metric-grid">
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">CSI Score</div>
+                  <div class="aspek-metric-val" style="color:#00B894;">4.3/5</div>
+                  <div class="aspek-metric-note">rata-rata R5</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Product Know.</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">62%</div>
+                  <div class="aspek-metric-note">SA lulus test PK</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Complaint Rate</div>
+                  <div class="aspek-metric-val" style="color:#00B894;">0.8%</div>
+                  <div class="aspek-metric-note">dari total transaksi</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Promo Comply</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">71%</div>
+                  <div class="aspek-metric-note">toko jalankan promo</div>
+                </div>
+              </div>
+              <div class="insight-row green" style="margin-top:0.75rem;margin-bottom:0;">
+                <span class="insight-icon">💡</span>
+                <div class="insight-text"><strong>AI Insight:</strong> CSI 4.3 dan complaint rate 0.8% tergolong baik. Namun Product Knowledge hanya 62% — <strong>38% SA belum lulus PK Samsung A57/A37</strong>. Ini langsung berdampak pada kemampuan closing. Prioritaskan PK training di toko-toko TSH underperforming.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aspek 3: Operation -->
+          <div class="aspek-card" id="aspek-3">
+            <div class="aspek-header" onclick="toggleAspek('aspek-3')">
+              <div class="aspek-num s3">3</div>
+              <div class="aspek-label">
+                <div class="aspek-name">Operation</div>
+                <div class="aspek-sub">Stok · Display · Store Readiness</div>
+              </div>
+              <svg class="aspek-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="aspek-body">
+              <div class="aspek-metric-grid">
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Stok Availability</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">78%</div>
+                  <div class="aspek-metric-note">toko punya stok A57</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Display Comply</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">65%</div>
+                  <div class="aspek-metric-note">sesuai planogram</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Store Readiness</div>
+                  <div class="aspek-metric-val" style="color:#00B894;">84%</div>
+                  <div class="aspek-metric-note">kriteria operasional</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Stock Turnover</div>
+                  <div class="aspek-metric-val" style="color:#1428A0;">0.23x</div>
+                  <div class="aspek-metric-note">Apr vs stok awal</div>
+                </div>
+              </div>
+              <div class="insight-row orange" style="margin-top:0.75rem;margin-bottom:0;">
+                <span class="insight-icon">💡</span>
+                <div class="insight-text"><strong>AI Insight:</strong> Display compliance 65% menjadi bottleneck — <strong>toko dengan display benar rata-rata jual 2.1x lebih banyak</strong>. Lakukan audit display di seluruh store TSH underperforming minggu pertama Mei. Stok availability 78% juga perlu ditingkatkan ke 95%+ untuk mendukung akselerasi Mei.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aspek 4: People -->
+          <div class="aspek-card" id="aspek-4">
+            <div class="aspek-header" onclick="toggleAspek('aspek-4')">
+              <div class="aspek-num s4">4</div>
+              <div class="aspek-label">
+                <div class="aspek-name">People</div>
+                <div class="aspek-sub">Product Knowledge · Financing Promo App</div>
+              </div>
+              <svg class="aspek-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="aspek-body">
+              <div class="aspek-metric-grid">
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">SA Lulus PK</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">62%</div>
+                  <div class="aspek-metric-note">dari total SA R5</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">PK Target</div>
+                  <div class="aspek-metric-val">100%</div>
+                  <div class="aspek-metric-note">semua SA harus lulus</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Financing App</div>
+                  <div class="aspek-metric-val" style="color:#FF4757;">41%</div>
+                  <div class="aspek-metric-note">SA aktif pakai app</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Konversi Kredit</div>
+                  <div class="aspek-metric-val" style="color:#00B894;">28%</div>
+                  <div class="aspek-metric-note">dari total penjualan</div>
+                </div>
+              </div>
+              <div class="insight-row purple" style="margin-top:0.75rem;margin-bottom:0;">
+                <span class="insight-icon">💡</span>
+                <div class="insight-text"><strong>AI Insight:</strong> Financing App adoption hanya 41% padahal <strong>toko yang aktif pakai app mencatatkan konversi kredit 28% vs 9% untuk yang tidak</strong>. Target 100% SA aktif di Financing App dengan gamifikasi atau insentif khusus. SA yang lulus PK Samsung + aktif di Financing App = multiplier effect pada penjualan.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aspek 5: Financial -->
+          <div class="aspek-card" id="aspek-5">
+            <div class="aspek-header" onclick="toggleAspek('aspek-5')">
+              <div class="aspek-num s5">5</div>
+              <div class="aspek-label">
+                <div class="aspek-name">Financial</div>
+                <div class="aspek-sub">Margin · Target Margin · Unit to Sell</div>
+              </div>
+              <svg class="aspek-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="aspek-body">
+              <div class="aspek-metric-grid">
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Margin Aktual</div>
+                  <div class="aspek-metric-val" style="color:#FFA502;">8.2%</div>
+                  <div class="aspek-metric-note">rata-rata A57+A37</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Target Margin</div>
+                  <div class="aspek-metric-val">10.5%</div>
+                  <div class="aspek-metric-note">standar Samsung R5</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Revenue MTD</div>
+                  <div class="aspek-metric-val" style="color:#1428A0;">Rp 3.97M</div>
+                  <div class="aspek-metric-note">est. @Rp 3jt/unit avg</div>
+                </div>
+                <div class="aspek-metric">
+                  <div class="aspek-metric-label">Unit Utk Target</div>
+                  <div class="aspek-metric-val" style="color:#FF4757;">+3.267</div>
+                  <div class="aspek-metric-note">unit lagi agar 80%</div>
+                </div>
+              </div>
+              <div class="insight-row red" style="margin-top:0.75rem;margin-bottom:0;">
+                <span class="insight-icon">💡</span>
+                <div class="insight-text"><strong>AI Insight:</strong> Gap margin 2.3% (aktual 8.2% vs target 10.5%) diakibatkan <strong>volume rendah + promo diskon tidak terstruktur</strong>. Untuk mencapai 80% target April (4.591 unit), diperlukan tambahan 3.267 unit dalam 3 hari — tidak feasible. Strategi: fokus ke <strong>sell-in Mei dengan margin protection</strong>, hindari diskon tambahan di luar promo Samsung resmi.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- AI RECOMMENDATIONS -->
+      <div class="card" style="margin-bottom:0.75rem;">
+        <div class="ai-rec-header">
+          <div class="ai-icon">🤖</div>
+          <div>
+            <div class="ai-rec-title">AI Rekomendasi</div>
+            <div class="ai-rec-sub">5 Prioritas Tindakan — Region 5 Ops</div>
+          </div>
+        </div>
+
+        <div class="rec-item priority-1">
+          <div class="rec-priority"><span class="rec-priority-dot p1-dot"></span>PRIORITAS 1 — KRITIS</div>
+          <div class="rec-text">Intervensi Langsung: TSH Abdillah & Rendi Januardi</div>
+          <div class="rec-detail">Lakukan coaching session dan store visit harian di minggu pertama Mei. Set minimum target 5 unit/toko/hari untuk A57 dan 2 unit/toko/hari untuk A37. Buat group WA monitoring harian dengan update pukul 15.00 dan 20.00 WIB.</div>
+          <span class="rec-aspek-tag">Operation · People</span>
+        </div>
+
+        <div class="rec-item priority-2">
+          <div class="rec-priority"><span class="rec-priority-dot p2-dot"></span>PRIORITAS 2 — TINGGI</div>
+          <div class="rec-text">Mandatory PK Training Samsung A57 & A37 untuk semua SA</div>
+          <div class="rec-detail">38% SA belum lulus PK. Jadwalkan training online/offline di minggu 1–2 Mei. Fokus pada: USP kamera A57 vs kompetitor, benefit kredit Samsung, dan demo langsung di toko. Target: 100% SA lulus sebelum 15 Mei 2026.</div>
+          <span class="rec-aspek-tag">Layanan · People</span>
+        </div>
+
+        <div class="rec-item priority-3">
+          <div class="rec-priority"><span class="rec-priority-dot p3-dot"></span>PRIORITAS 3 — SEDANG</div>
+          <div class="rec-text">Aktivasi Financing Promo App di Semua Toko</div>
+          <div class="rec-detail">Hanya 41% SA aktif di Financing App. Target 80% dalam 2 minggu pertama Mei melalui insentif: SA yang close 3+ unit via app mendapat voucher/reward. Koordinasi dengan Samsung untuk program cicilan 0% tenor 12 bulan yang diperpanjang sampai akhir Juni.</div>
+          <span class="rec-aspek-tag">People · Financial</span>
+        </div>
+
+        <div class="rec-item priority-4">
+          <div class="rec-priority"><span class="rec-priority-dot p4-dot"></span>PRIORITAS 4 — SEDANG</div>
+          <div class="rec-text">Display Audit & Realokasi Stok A57/A37</div>
+          <div class="rec-detail">Display compliance 65% perlu ditingkatkan ke 90%+. Lakukan audit planogram di semua toko TSH underperforming. Koordinasi dengan Samsung CM untuk realokasi stok dari gudang pusat ke toko-toko area Abdillah (Ciledug/Tangerang) dan Rendi Januardi (Balaraja/Cisoka).</div>
+          <span class="rec-aspek-tag">Operation · Sales</span>
+        </div>
+
+        <div class="rec-item priority-5">
+          <div class="rec-priority"><span class="rec-priority-dot p5-dot"></span>PRIORITAS 5 — STRATEGIS</div>
+          <div class="rec-text">War Room Samsung R5 — Weekly Review dengan Pak Andre</div>
+          <div class="rec-detail">Bentuk "Samsung War Room" dengan review mingguan setiap Senin pagi. Dashboard ini (ERA-SALES AI Insights) menjadi acuan utama. Target: minimal 30% catchup dari gap April di Mei, dan 100% catchup di Juni agar 12W campaign on track. Libatkan top 3 TSH sebagai mentor untuk bottom 3 TSH.</div>
+          <span class="rec-aspek-tag">Sales · Layanan · Operation · People · Financial</span>
+        </div>
+      </div>
+
+      <!-- INTEGRASI DATA -->
+      <div class="sync-card">
+        <div class="sync-card-title">
+          🔗 Integrasi & Sinkronisasi Data Harian
+        </div>
+        <div class="sync-card-body">
+          <strong>Target Samsung A57 & A37</strong> (dari folder ini) akan otomatis tersinkronisasi dengan <strong>Sales vs Stock B2C Region 5</strong> yang dikirim Melati setiap hari. Data akan diproses oleh AI Agent dan insights ini akan diperbarui otomatis setiap pagi pukul 08.00 WIB.
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+          <button class="sync-upload-btn" style="flex:1;" onclick="document.getElementById('file-input').click()">
+            📤 Upload Target Excel
+          </button>
+          <button class="sync-upload-btn" style="flex:1;background:linear-gradient(135deg,#00B894,#00CEC9);" onclick="doSync()">
+            ↻ Sync Sekarang
+          </button>
+        </div>
+        <input type="file" id="file-input" class="file-input" accept=".xlsx,.xls" onchange="handleFileUpload(this)" />
+        <div id="upload-status" style="font-size:0.75rem;color:var(--success);margin-top:0.5rem;display:none;"></div>
+      </div>
+
+      <div style="height:80px;"></div>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="target-samsung.html" class="nav-item active">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+      </svg>
+      <span>Target Sales</span>
+    </a>
+    <a href="#" class="nav-item" onclick="alert('Halaman Analisis lanjutan akan segera hadir.')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>AI Chat</span>
+    </a>
+  </nav>
+
+  <script>
+  // ── Data from Excel: Target_Samsung_A57_A37_Region5_v2.xlsx ──
+  const TSH_DATA = {
+    w1: [
+      { name: "Aris Fachrudin",         target_a57:555, target_a37:199, ach_a57:147, ach_a37:45  },
+      { name: "Febrian Tri Wibowo",      target_a57:170, target_a37:78,  ach_a57:54,  ach_a37:13  },
+      { name: "Irman Permana",           target_a57:109, target_a37:33,  ach_a57:27,  ach_a37:12  },
+      { name: "Lukman Wibowo",           target_a57:103, target_a37:28,  ach_a57:27,  ach_a37:7   },
+      { name: "Mensi Alexander",         target_a57:60,  target_a37:12,  ach_a57:3,   ach_a37:5   },
+      { name: "Rendy Nur Setiawan",      target_a57:113, target_a37:48,  ach_a57:36,  ach_a37:8   },
+      { name: "Abdillah",                target_a57:154, target_a37:72,  ach_a57:18,  ach_a37:7   },
+      { name: "Arengga Prasetiyo",       target_a57:135, target_a37:67,  ach_a57:37,  ach_a37:15  },
+      { name: "Ari Hidayat",             target_a57:100, target_a37:71,  ach_a57:20,  ach_a37:8   },
+      { name: "Eka Puji Chaerul Anwar",  target_a57:157, target_a37:64,  ach_a57:25,  ach_a37:5   },
+      { name: "Nurul Zaman",             target_a57:167, target_a37:58,  ach_a57:43,  ach_a37:21  },
+      { name: "Rendi Januardi",          target_a57:247, target_a37:131, ach_a57:39,  ach_a37:9   },
+      { name: "Sandi Maulana",           target_a57:137, target_a37:60,  ach_a57:29,  ach_a37:15  },
+      { name: "Liastuti",                target_a57:483, target_a37:163, ach_a57:163, ach_a37:47  },
+      { name: "Lim Ping Kian",           target_a57:593, target_a37:206, ach_a57:169, ach_a37:60  },
+    ],
+    w2: [
+      { name: "Aris Fachrudin",          target_a57:150, target_a37:54,  ach_a57:50,  ach_a37:19  },
+      { name: "Febrian Tri Wibowo",      target_a57:44,  target_a37:7,   ach_a57:13,  ach_a37:4   },
+      { name: "Irman Permana",           target_a57:39,  target_a37:8,   ach_a57:8,   ach_a37:1   },
+      { name: "Lukman Wibowo",           target_a57:20,  target_a37:17,  ach_a57:8,   ach_a37:4   },
+      { name: "Mensi Alexander",         target_a57:15,  target_a37:7,   ach_a57:5,   ach_a37:1   },
+      { name: "Rendy Nur Setiawan",      target_a57:27,  target_a37:14,  ach_a57:16,  ach_a37:9   },
+      { name: "Abdillah",                target_a57:39,  target_a37:33,  ach_a57:6,   ach_a37:4   },
+      { name: "Arengga Prasetiyo",       target_a57:44,  target_a37:18,  ach_a57:14,  ach_a37:9   },
+      { name: "Ari Hidayat",             target_a57:23,  target_a37:8,   ach_a57:9,   ach_a37:1   },
+      { name: "Eka Puji Chaerul Anwar",  target_a57:45,  target_a37:18,  ach_a57:12,  ach_a37:5   },
+      { name: "Nurul Zaman",             target_a57:42,  target_a37:24,  ach_a57:17,  ach_a37:11  },
+      { name: "Rendi Januardi",          target_a57:64,  target_a37:33,  ach_a57:16,  ach_a37:3   },
+      { name: "Sandi Maulana",           target_a57:51,  target_a37:14,  ach_a57:11,  ach_a37:8   },
+      { name: "Liastuti",                target_a57:99,  target_a37:39,  ach_a57:58,  ach_a37:19  },
+      { name: "Lim Ping Kian",           target_a57:165, target_a37:56,  ach_a57:55,  ach_a37:32  },
+    ],
+    w3: [
+      { name: "Aris Fachrudin",          target_a57:130, target_a37:59,  ach_a57:8,   ach_a37:6   },
+      { name: "Febrian Tri Wibowo",      target_a57:36,  target_a37:19,  ach_a57:2,   ach_a37:0   },
+      { name: "Irman Permana",           target_a57:25,  target_a37:9,   ach_a57:0,   ach_a37:0   },
+      { name: "Lukman Wibowo",           target_a57:24,  target_a37:8,   ach_a57:3,   ach_a37:3   },
+      { name: "Mensi Alexander",         target_a57:18,  target_a37:13,  ach_a57:1,   ach_a37:0   },
+      { name: "Rendy Nur Setiawan",      target_a57:27,  target_a37:10,  ach_a57:2,   ach_a37:3   },
+      { name: "Abdillah",                target_a57:35,  target_a37:11,  ach_a57:0,   ach_a37:0   },
+      { name: "Arengga Prasetiyo",       target_a57:50,  target_a37:20,  ach_a57:3,   ach_a37:2   },
+      { name: "Ari Hidayat",             target_a57:27,  target_a37:12,  ach_a57:0,   ach_a37:1   },
+      { name: "Eka Puji Chaerul Anwar",  target_a57:41,  target_a37:12,  ach_a57:3,   ach_a37:1   },
+      { name: "Nurul Zaman",             target_a57:26,  target_a37:16,  ach_a57:1,   ach_a37:0   },
+      { name: "Rendi Januardi",          target_a57:56,  target_a37:30,  ach_a57:2,   ach_a37:3   },
+      { name: "Sandi Maulana",           target_a57:26,  target_a37:11,  ach_a57:0,   ach_a37:0   },
+      { name: "Liastuti",                target_a57:116, target_a37:25,  ach_a57:5,   ach_a37:1   },
+      { name: "Lim Ping Kian",           target_a57:140, target_a37:29,  ach_a57:3,   ach_a37:3   },
+    ]
+  };
+
+  function buildTshList(week) {
+    const data = TSH_DATA[`w${week}`];
+    const sorted = data.map(d => {
+      const total_target = d.target_a57 + d.target_a37;
+      const total_ach    = d.ach_a57 + d.ach_a37;
+      const pct = total_target > 0 ? Math.round(total_ach / total_target * 100) : 0;
+      return { ...d, total_target, total_ach, pct };
+    }).sort((a, b) => b.pct - a.pct);
+
+    const container = document.getElementById(`tsh-list-w${week}`);
+    if (!container) return;
+    container.innerHTML = '';
+    sorted.forEach((d, i) => {
+      const fillClass = d.pct >= 30 ? 'good' : d.pct >= 20 ? 'warn' : 'bad';
+      const pctClass  = d.pct >= 30 ? 'good' : d.pct >= 20 ? 'warn' : 'bad';
+      const rankClass = i < 3 ? 'top' : d.pct < 15 ? 'danger' : '';
+      container.innerHTML += `
+        <div class="tsh-item">
+          <div class="tsh-rank ${rankClass}">${i+1}</div>
+          <div class="tsh-info">
+            <div class="tsh-name">${d.name}</div>
+            <div class="tsh-target">A57: ${d.ach_a57}/${d.target_a57} · A37: ${d.ach_a37}/${d.target_a37}</div>
+          </div>
+          <div class="tsh-progress-wrap">
+            <div class="tsh-bar"><div class="tsh-bar-fill ${fillClass}" style="width:${Math.min(d.pct,100)}%"></div></div>
+            <div class="tsh-pct ${pctClass}">${d.pct}%</div>
+          </div>
+        </div>`;
+    });
+  }
+
+  function switchWeek(w) {
+    document.querySelectorAll('.week-tab').forEach(t => t.classList.toggle('active', parseInt(t.dataset.week) === w));
+    document.querySelectorAll('.week-panel').forEach(p => p.classList.toggle('active', p.id === `week-panel-${w}`));
+  }
+
+  function switchAnalysis(key, btn) {
+    document.querySelectorAll('.analysis-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.analysis-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`analysis-${key}`).classList.add('active');
+  }
+
+  function toggleAspek(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  function doSync() {
+    const btn = document.getElementById('sync-btn');
+    btn.textContent = '↻ Syncing...';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = '✓ Synced';
+      setTimeout(() => {
+        btn.textContent = '↻ Sync';
+        btn.disabled = false;
+      }, 2000);
+    }, 1500);
+  }
+
+  function handleFileUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const status = document.getElementById('upload-status');
+    status.style.display = 'block';
+    status.textContent = `📤 Mengupload: ${file.name}...`;
+    setTimeout(() => {
+      status.textContent = `✅ Berhasil upload: ${file.name}. AI sedang menganalisis data...`;
+      setTimeout(() => {
+        status.textContent = `🤖 Analisis selesai! Data diperbarui.`;
+      }, 2000);
+    }, 1500);
+  }
+
+  // Init
+  buildTshList(1);
+  buildTshList(2);
+  buildTshList(3);
+  </script>
+</body>
+</html>

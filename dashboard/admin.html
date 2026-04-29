@@ -31,6 +31,44 @@
     .status-rejected { background:#fee2e2; color:#b91c1c; }
     .section-empty { text-align:center; padding:2rem 1rem; color:var(--text-3); font-size:0.875rem; }
     .kelola-loading { text-align:center; padding:2rem; color:var(--text-2); }
+
+    /* ── Toggle Switch ── */
+    .toggle-card { display:flex; align-items:center; gap:1rem; padding:1.125rem; background:var(--bg); border-radius:12px; margin-bottom:0.75rem; }
+    .toggle-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+    .toggle-icon.blue   { background:#EEF2FF; }
+    .toggle-icon.orange { background:#FFF8EC; }
+    .toggle-info { flex:1; min-width:0; }
+    .toggle-title { font-size:0.9rem; font-weight:700; color:var(--text); }
+    .toggle-desc  { font-size:0.75rem; color:var(--text-2); margin-top:0.15rem; line-height:1.5; }
+    .toggle-wrap  { flex-shrink:0; }
+    .toggle-input { display:none; }
+    .toggle-label {
+      display:block; width:52px; height:28px;
+      background:var(--border); border-radius:14px;
+      position:relative; cursor:pointer;
+      transition:background 0.25s;
+    }
+    .toggle-label::after {
+      content:''; position:absolute;
+      top:3px; left:3px;
+      width:22px; height:22px;
+      background:#fff; border-radius:50%;
+      box-shadow:0 1px 4px rgba(0,0,0,0.2);
+      transition:transform 0.25s;
+    }
+    .toggle-input:checked + .toggle-label { background:var(--success); }
+    .toggle-input:checked + .toggle-label::after { transform:translateX(24px); }
+    .setting-status {
+      display:inline-flex; align-items:center; gap:0.35rem;
+      font-size:0.72rem; font-weight:700;
+      padding:0.25rem 0.625rem; border-radius:20px;
+      margin-top:0.375rem;
+    }
+    .setting-status.on  { background:var(--success-bg); color:var(--success); }
+    .setting-status.off { background:var(--warning-bg); color:var(--warning); }
+    .setting-status-dot { width:6px; height:6px; border-radius:50%; }
+    .setting-status.on  .setting-status-dot { background:var(--success); }
+    .setting-status.off .setting-status-dot { background:var(--warning); }
   </style>
 </head>
 <body class="app-body">
@@ -68,6 +106,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="upload">Upload Data</button>
         <button class="admin-tab" data-tab="kelola">Kelola Akses <span id="pending-badge" class="hidden" style="background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:0.7rem;margin-left:4px;"></span></button>
+        <button class="admin-tab" data-tab="pengaturan">⚙️ Pengaturan</button>
       </div>
 
       <!-- TAB: Upload Data -->
@@ -205,6 +244,61 @@
         <div style="height:40px;"></div>
       </div><!-- /tab-kelola -->
 
+      <!-- TAB: Pengaturan -->
+      <div class="tab-panel" id="tab-pengaturan">
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Pengaturan Akses Dashboard</h3>
+          </div>
+
+          <!-- Toggle: Login Required -->
+          <div class="toggle-card">
+            <div class="toggle-icon blue">🔐</div>
+            <div class="toggle-info">
+              <div class="toggle-title">Mode Login</div>
+              <div class="toggle-desc">Aktifkan agar pengguna wajib login sebelum melihat dashboard. Nonaktifkan untuk mode preview bebas login.</div>
+              <div id="login-status-badge" class="setting-status on">
+                <span class="setting-status-dot"></span>
+                <span id="login-status-text">Login AKTIF</span>
+              </div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" class="toggle-input" id="toggle-login" onchange="handleLoginToggle(this)" />
+              <label class="toggle-label" for="toggle-login"></label>
+            </div>
+          </div>
+
+          <div id="login-mode-info" style="font-size:0.78rem;color:var(--text-2);padding:0.75rem;background:var(--bg);border-radius:10px;line-height:1.6;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Informasi Sistem</h3>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;padding:0.25rem 0 0.5rem;">
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;margin-bottom:0.25rem;">Versi App</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--text);">ERA-SALES v2.0</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;margin-bottom:0.25rem;">Region</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--text);">Region 5</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;margin-bottom:0.25rem;">AI Insights</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--success);">Aktif ✓</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:0.75rem;">
+              <div style="font-size:0.65rem;color:var(--text-2);text-transform:uppercase;font-weight:600;margin-bottom:0.25rem;">Database</div>
+              <div style="font-size:1rem;font-weight:700;color:var(--success);">Supabase ✓</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:40px;"></div>
+      </div><!-- /tab-pengaturan -->
+
     </div><!-- /admin-content -->
   </main>
 
@@ -222,8 +316,40 @@
         btn.classList.add('active');
         document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
         if (btn.dataset.tab === 'kelola') loadKelolaAkses();
+        if (btn.dataset.tab === 'pengaturan') initPengaturan();
       });
     });
+
+    // ── Pengaturan: Login Toggle ───────────────────────────────
+    function initPengaturan() {
+      const isOff = localStorage.getItem('era_login_required') === 'off';
+      const toggle = document.getElementById('toggle-login');
+      // Toggle ON = login AKTIF, OFF = login dimatikan
+      toggle.checked = !isOff;
+      updateLoginUI(!isOff);
+    }
+
+    function handleLoginToggle(el) {
+      const loginOn = el.checked;
+      localStorage.setItem('era_login_required', loginOn ? 'on' : 'off');
+      updateLoginUI(loginOn);
+    }
+
+    function updateLoginUI(loginOn) {
+      const badge    = document.getElementById('login-status-badge');
+      const text     = document.getElementById('login-status-text');
+      const infoBox  = document.getElementById('login-mode-info');
+
+      if (loginOn) {
+        badge.className = 'setting-status on';
+        text.textContent = 'Login AKTIF';
+        infoBox.innerHTML = '🔐 <strong>Mode Login Aktif</strong> — Pengguna wajib login dan mendapat persetujuan admin sebelum bisa melihat dashboard. Pengaturan ini berlaku segera di browser ini.';
+      } else {
+        badge.className = 'setting-status off';
+        text.textContent = 'Login NONAKTIF';
+        infoBox.innerHTML = '👁️ <strong>Mode Preview</strong> — Dashboard bisa diakses langsung tanpa login. Gunakan mode ini saat Pak Andre sedang review data. Aktifkan kembali setelah selesai.';
+      }
+    }
 
     // ── Kelola Akses ───────────────────────────────────────────
     function getInitialsFromName(name) {
