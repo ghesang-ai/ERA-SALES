@@ -1,8 +1,13 @@
+
 // ERA-SALES AI Insights — Netlify Function (Claude Proxy)
 // API key disimpan di Netlify environment dan hanya dipakai di server.
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
+const ANTHROPIC_MODELS = [
+  'claude-sonnet-4-20250514',
+  'claude-3-7-sonnet-latest',
+  'claude-3-5-sonnet-latest',
+];
 
 exports.handler = async function(event) {
   const headers = {
@@ -59,56 +64,84 @@ exports.handler = async function(event) {
   }
 
   try {
-    const anthropicResponse = await fetch(ANTHROPIC_URL, {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 2048,
-        system: `Kamu adalah ERA-SALES AI Agent untuk Erafone Region 5.
+    let lastError = null;
+
+    for (const model of ANTHROPIC_MODELS) {
+      const anthropicResponse = await fetch(ANTHROPIC_URL, {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 2048,
+          system: `Kamu adalah ERA-SALES AI Agent untuk Erafone Region 5.
 Brand yang sedang dianalisis: ${brand}.
 Periode analisis: ${week}.
 Gunakan Bahasa Indonesia yang profesional, tajam, spesifik, dan actionable.
 Berikan struktur yang rapi agar mudah dibaca di dashboard.`,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      }),
-    });
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        }),
+      });
 
-    const result = await anthropicResponse.json();
+      const result = await anthropicResponse.json();
 
-    if (!anthropicResponse.ok) {
+      if (anthropicResponse.ok) {
+        const content = Array.isArray(result.content)
+          ? result.content
+              .filter(block => block && block.type === 'text' && typeof block.text === 'string')
+              .map(block => block.text)
+              .join('\n\n')
+          : '';
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            content,
+            model: result.model || model,
+          }),
+        };
+      }
+
+      lastError = {
+        statusCode: anthropicResponse.status,
+        message: result.error?.message || 'Anthropic API error',
+        details: result.error || null,
+        model,
+      };
+
+      // Kalau error-nya karena model tidak tersedia untuk API key ini, coba model fallback berikutnya.
+      if (anthropicResponse.status === 404 || anthropicResponse.status === 400) {
+        continue;
+      }
+
       return {
         statusCode: anthropicResponse.status,
         headers,
         body: JSON.stringify({
-          error: result.error?.message || 'Anthropic API error',
-          details: result.error || null,
+          error: lastError.message,
+          details: lastError.details,
+          model: model,
         }),
       };
     }
 
-    const content = Array.isArray(result.content)
-      ? result.content
-          .filter(block => block && block.type === 'text' && typeof block.text === 'string')
-          .map(block => block.text)
-          .join('\n\n')
-      : '';
-
     return {
-      statusCode: 200,
+      statusCode: lastError?.statusCode || 500,
       headers,
       body: JSON.stringify({
-        content,
-        model: result.model || ANTHROPIC_MODEL,
+        error: lastError?.message || 'Tidak ada model Anthropic yang tersedia untuk API key ini.',
+        details: lastError?.details || null,
+        model: lastError?.model || null,
+        tried_models: ANTHROPIC_MODELS,
       }),
     };
   } catch (error) {
@@ -121,4 +154,3 @@ Berikan struktur yang rapi agar mudah dibaca di dashboard.`,
     };
   }
 };
-
