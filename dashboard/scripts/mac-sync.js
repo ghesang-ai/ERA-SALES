@@ -467,6 +467,7 @@ async function uploadToSupabase(records, label, periodStart, periodEnd) {
       yoy_growth:   r.ach_yoy,
       ytd_2025:     r.ytd_2025,
       ytd_2026:     r.ytd_2026,
+      stores:       r.stores || null,
     }));
     const { error } = await supabase.from('sales_summary').insert(batch);
     if (error) {
