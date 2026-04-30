@@ -172,30 +172,27 @@ async function downloadFromNextcloud(shareUrl, password) {
     log(`requesttoken OK (${requesttoken.length} chars)`);
   }
 
-  // Step 2: Authenticate
-  const authRes = await fetch(`${baseUrl}/index.php/s/${token}/authenticate/ajax`, {
+  // Step 2: POST ke halaman share (bukan /authenticate/ajax) — ini yang browser lakukan
+  const formRes = await fetch(`${baseUrl}/index.php/s/${token}`, {
     method: 'POST',
     headers: {
-      'Content-Type':     'application/x-www-form-urlencoded',
-      'X-Requested-With': 'XMLHttpRequest',
-      'Requesttoken':     requesttoken,
-      'User-Agent':       UA,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent':   UA,
       ...(sessionCookie ? { 'Cookie': sessionCookie } : {}),
     },
-    body: `password=${encodeURIComponent(password)}&requesttoken=${encodeURIComponent(requesttoken)}`,
+    body: `requesttoken=${encodeURIComponent(requesttoken)}&password=${encodeURIComponent(password)}`,
     redirect: 'follow',
   });
+  log(`Form POST: ${formRes.status}`);
 
-  const newCookies = typeof authRes.headers.getSetCookie === 'function'
-    ? authRes.headers.getSetCookie()
-    : [authRes.headers.get('set-cookie') || ''];
-  const newCookie = newCookies.map(c => c.split(';')[0]).filter(Boolean).join('; ');
+  // Ambil cookies baru dari response form
+  const formCookies = typeof formRes.headers.getSetCookie === 'function'
+    ? formRes.headers.getSetCookie()
+    : [formRes.headers.get('set-cookie') || ''];
+  const newCookie = formCookies.map(c => c.split(';')[0]).filter(Boolean).join('; ');
   if (newCookie) sessionCookie = [sessionCookie, newCookie].filter(Boolean).join('; ');
 
-  const authText = await authRes.text();
-  log(`Auth: ${authRes.status} — ${authText.substring(0, 80)}`);
-
-  // Step 3: Download
+  // Step 3: Download file
   const dlRes = await fetch(`${baseUrl}/index.php/s/${token}/download`, {
     headers: {
       'User-Agent': UA,
@@ -208,6 +205,17 @@ async function downloadFromNextcloud(shareUrl, password) {
   log(`Download: ${dlRes.status}, CT: ${ct}`);
 
   if (!dlRes.ok || ct.includes('text/html')) {
+    // Coba sekali lagi dengan WebDAV Basic Auth sebagai fallback
+    log('Fallback: WebDAV Basic Auth...');
+    const cred    = Buffer.from(`${token}:${password}`).toString('base64');
+    const wdRes   = await fetch(`${baseUrl}/public.php/webdav/`, {
+      headers: { 'Authorization': `Basic ${cred}`, 'User-Agent': UA },
+      redirect: 'follow',
+    });
+    log(`WebDAV: ${wdRes.status}, CT: ${wdRes.headers.get('content-type')}`);
+    if (wdRes.ok && !(wdRes.headers.get('content-type') || '').includes('text/html')) {
+      return Buffer.from(await wdRes.arrayBuffer());
+    }
     throw new Error(`Download gagal: HTTP ${dlRes.status}, CT: ${ct}`);
   }
 
