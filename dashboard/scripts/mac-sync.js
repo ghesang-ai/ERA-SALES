@@ -90,12 +90,7 @@ async function fetchEmailFromImap() {
     port:   CONFIG.imap.port,
     secure: true,
     auth:   { user: CONFIG.imap.user, pass: CONFIG.imap.pass },
-    logger: {
-      debug: (obj) => {},
-      info:  (obj) => {},
-      warn:  (obj) => log('IMAP WARN: ' + JSON.stringify(obj)),
-      error: (obj) => log('IMAP ERROR: ' + JSON.stringify(obj)),
-    },
+    logger: false,
     tls:    { rejectUnauthorized: false },
   });
 
