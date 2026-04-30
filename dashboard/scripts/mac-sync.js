@@ -336,18 +336,24 @@ function parseByStoreSheet(ws) {
   if (headerRow === -1) return result;
 
   const headers = raw[headerRow];
-  const nameIdx = headers.findIndex(h => h && String(h).toUpperCase().includes('TSH'));
+
+  const tshIdx   = headers.findIndex(h => h && String(h).toUpperCase().includes('TSH'));
+  const codeIdx  = headers.findIndex(h => h && String(h).toUpperCase().includes('CODE'));
   const storeIdx = headers.findIndex(h => h && String(h).toUpperCase().includes('STORE'));
-  const mtdIdx  = headers.findIndex(h => h && String(h).toUpperCase().includes('MTD'));
-  if (nameIdx === -1 || storeIdx === -1) return result;
+  // Ambil kolom "Ach %" yang TERAKHIR = bulan berjalan (April 2026)
+  const achIdx   = headers.reduce((last, h, i) =>
+    (h && String(h).toUpperCase().trim() === 'ACH %') ? i : last, -1);
+  if (tshIdx === -1 || storeIdx === -1) return result;
+
 
   for (const row of raw.slice(headerRow + 1)) {
-    if (!row || !row[nameIdx] || !row[storeIdx]) continue;
-    const tsh   = String(row[nameIdx]).trim();
-    const store = String(row[storeIdx]).trim();
-    const mtd   = parseNum(row[mtdIdx]);
+    if (!row || !row[tshIdx] || !row[storeIdx]) continue;
+    const tsh  = String(row[tshIdx]).trim();
+    const name = String(row[storeIdx]).trim();
+    const code = codeIdx !== -1 && row[codeIdx] ? String(row[codeIdx]).trim() : '';
+    const ach  = achIdx !== -1 ? parseNum(row[achIdx]) : null;
     if (!result[tsh]) result[tsh] = [];
-    result[tsh].push({ store, mtd });
+    result[tsh].push({ code, name, ach });
   }
   return result;
 }
