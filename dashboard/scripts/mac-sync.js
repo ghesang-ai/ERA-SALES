@@ -252,7 +252,6 @@ function parseExcelBuffer(buffer, periodLabel) {
   const headers  = raw[headerRow];
   const dataRows = raw.slice(headerRow + 1);
   const colMap   = mapColumns(headers);
-
   const records = [];
   let currentLob = null, currentSection = 'tsh', seenBrandTotal = false;
 
@@ -289,7 +288,9 @@ function parseExcelBuffer(buffer, periodLabel) {
     }
 
     records.push({
-      row_type: rowType, lob_name: lobName, tsh_name: tshName,
+      row_type:     rowType,
+      lob_name:     lobName,
+      tsh_name:     tshName,
       baseline_yoy: parseNum(row[colMap.yoy_base]),
       baseline_mom: parseNum(row[colMap.mom_base]),
       target_april: parseNum(row[colMap.target]),
@@ -299,6 +300,9 @@ function parseExcelBuffer(buffer, periodLabel) {
       ach_yoy:      parseNum(row[colMap.ach_yoy]),
       ach_mom:      parseNum(row[colMap.ach_mom]),
       ach_target:   parseNum(row[colMap.ach_target]),
+      ach_est:      parseNum(row[colMap.ach_est]),
+      ytd_2025:     parseNum(row[colMap.ytd_2025]),
+      ytd_2026:     parseNum(row[colMap.ytd_2026]),
     });
   }
 
@@ -351,30 +355,55 @@ function parseByStoreSheet(ws) {
 function mapColumns(headers) {
   const map = { daily: {} };
   if (!headers) return map;
+  const MON = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const baselines = [];
+
   headers.forEach((h, i) => {
     if (!h) return;
-    const s = String(h).toUpperCase().trim();
-    if (s.includes('LOB') || s.includes('TSH') || s.includes('NAME')) map.name = i;
-    else if (s.match(/^YOY\s*(BASE|BASELINE|TARGET)?$/)) map.yoy_base = i;
-    else if (s.match(/^MOM\s*(BASE|BASELINE|TARGET)?$/)) map.mom_base = i;
-    else if (s.match(/^(TARGET|TGT)\s*(APRIL|APR)?$/))  map.target   = i;
-    else if (s === 'MTD')    map.mtd      = i;
-    else if (s === 'EST' || s === 'ESTIMATE') map.estimate = i;
-    else if (s.match(/ACH.*YOY/i) || s.match(/YOY.*ACH/i)) map.ach_yoy    = i;
-    else if (s.match(/ACH.*MOM/i) || s.match(/MOM.*ACH/i)) map.ach_mom    = i;
-    else if (s.match(/ACH.*TGT/i) || s.match(/TGT.*ACH/i) || s === 'ACH%') map.ach_target = i;
-    else {
-      // Kolom tanggal: angka 1-31
-      const d = parseInt(s);
-      if (!isNaN(d) && d >= 1 && d <= 31) {
-        const today = new Date();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year  = today.getFullYear();
-        const key   = `${year}-${month}-${String(d).padStart(2, '0')}`;
+    const raw = String(h).trim();
+    const s   = raw.toUpperCase();
+
+    // "DD/Mon/YY" → daily date (e.g. "01/Apr/26")
+    const dailyM = raw.match(/^(\d{1,2})\/([A-Za-z]{3})\/(\d{2})$/);
+    if (dailyM) {
+      const mon = MON[dailyM[2].toLowerCase()];
+      if (mon) {
+        const yr  = 2000 + parseInt(dailyM[3]);
+        const key = `${yr}-${String(mon).padStart(2,'0')}-${dailyM[1].padStart(2,'0')}`;
         map.daily[key] = i;
       }
+      return;
     }
+
+    // "Mon-YY" → baseline column (e.g. "Apr-25", "Mar-26")
+    const baseM = raw.match(/^([A-Za-z]{3})-(\d{2})$/);
+    if (baseM) {
+      const mon = MON[baseM[1].toLowerCase()];
+      if (mon) baselines.push({ i, yr: 2000 + parseInt(baseM[2]), mon });
+      return;
+    }
+
+    if      (s.includes('LOB') || s.includes('TSH'))          map.name       = i;
+    else if (s.includes('ACH') && s.includes('MTD'))          map.ach_target = i;
+    else if (s.includes('ACH') && s.includes('EST'))          map.ach_est    = i;
+    else if (s.includes('ACH') && s.includes('YOY'))          map.ach_yoy    = i;
+    else if (s.includes('ACH') && s.includes('MOM'))          map.ach_mom    = i;
+    else if (s.includes('ACH'))                               map.ach_target = i;
+    else if (s.includes('MTD'))                               map.mtd        = i;
+    else if (s.includes('TARGET') || s.includes('TGT'))       map.target     = i;
+    else if (s === 'EST' || s === 'ESTIMATE')                 map.estimate   = i;
+    else if (s === 'MOM')                                     map.ach_mom    = i;
+    else if (s === 'YOY')                                     map.ach_yoy    = i;
+    else if (s === '2025')                                    map.ytd_2025   = i;
+    else if (s === '2026')                                    map.ytd_2026   = i;
+    else if (s === 'YTD')                                     map.ytd        = i;
   });
+
+  // Baseline columns: sort by year+month → earliest=yoy_base, next=mom_base
+  baselines.sort((a, b) => a.yr !== b.yr ? a.yr - b.yr : a.mon - b.mon);
+  if (baselines[0]) map.yoy_base = baselines[0].i;
+  if (baselines[1]) map.mom_base = baselines[1].i;
+
   return map;
 }
 
@@ -415,7 +444,24 @@ async function uploadToSupabase(records, label, periodStart, periodEnd) {
   const BATCH = 50;
   let uploaded = 0;
   for (let i = 0; i < records.length; i += BATCH) {
-    const batch = records.slice(i, i + BATCH).map(r => ({ ...r, upload_id: upload.id }));
+    const batch = records.slice(i, i + BATCH).map(r => ({
+      upload_id:    upload.id,
+      row_type:     r.row_type,
+      lob_name:     r.lob_name,
+      tsh_name:     r.tsh_name,
+      baseline_yoy: r.baseline_yoy,
+      baseline_mom: r.baseline_mom,
+      target_april: r.target_april,
+      daily_sales:  r.daily_sales,
+      mtd:          r.mtd,
+      estimate:     r.estimate,
+      pct_ach_mtd:  r.ach_target,
+      pct_ach_est:  r.ach_est,
+      mom_growth:   r.ach_mom,
+      yoy_growth:   r.ach_yoy,
+      ytd_2025:     r.ytd_2025,
+      ytd_2026:     r.ytd_2026,
+    }));
     const { error } = await supabase.from('sales_summary').insert(batch);
     if (error) {
       // Rollback
