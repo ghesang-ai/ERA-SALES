@@ -26,15 +26,20 @@ const handler = async (event) => {
       return { statusCode: 200, body: JSON.stringify({ status: 'no_email', log }) };
     }
 
-    const { link, password, periodLabel, subject } = emailData;
+    const { attachment, link, password, periodLabel, subject } = emailData;
     log.push(`Email ditemukan: "${subject}"`);
-    log.push(`Link: ${link}`);
     log.push(`Period: ${periodLabel}`);
 
-    // 2. Download file Excel dari Nextcloud
-    log.push('Mendownload file dari Nextcloud...');
-    const excelBuffer = await downloadFromNextcloud(link, password, log);
-    log.push(`File berhasil didownload (${Math.round(excelBuffer.length / 1024)} KB)`);
+    // 2. Ambil file Excel: dari attachment email atau download Nextcloud
+    let excelBuffer;
+    if (attachment) {
+      log.push('Menggunakan attachment dari email langsung.');
+      excelBuffer = attachment;
+    } else {
+      log.push(`Mendownload dari Nextcloud: ${link}`);
+      excelBuffer = await downloadFromNextcloud(link, password, log);
+    }
+    log.push(`File siap diparse (${Math.round(excelBuffer.length / 1024)} KB)`);
 
     // 3. Parse Excel (logic sama persis dengan upload.js)
     log.push('Memparse Excel...');
@@ -103,28 +108,42 @@ async function fetchEmailFromImap(log) {
     const msg = await client.fetchOne(String(latestUid), { source: true }, { uid: true });
     const parsed = await simpleParser(msg.source);
 
-    // Gunakan plain text untuk ekstraksi link
-    const body = parsed.text || '';
-
-    // Ambil hanya bagian pertama (Sales vs Stock), sebelum bagian kedua (dashboard performance)
-    const salesSection = body.split(/berikut update dashboard/i)[0] || body;
-
-    // Ekstrak Link pertama dan Password pertama
-    const linkMatch = salesSection.match(/Link\s*[:\-]\s*(https?:\/\/[^\s\r\n]+)/i);
-    const passMatch = salesSection.match(/Password\s*[:\-]\s*([^\s\r\n]+)/i);
-
-    if (!linkMatch || !passMatch) {
-      log.push('Gagal ekstrak link/password dari email');
-      log.push('Body sample: ' + body.substring(0, 300));
-      return null;
-    }
-
-    // Ekstrak periode dari subject: "Sales vs Stock B2C Region 5 periode 01 - 29 April 2026"
+    // Ekstrak periode dari subject
     const subjectText = parsed.subject || '';
     const periodeMatch = subjectText.match(/periode\s+(.+)/i);
     const periodLabel = periodeMatch ? periodeMatch[1].trim() : subjectText;
 
+    // ── Cek attachment Excel dulu (jika Melati lampirkan file langsung) ──
+    const xlsAttachment = (parsed.attachments || []).find(a =>
+      /\.xlsx?$/i.test(a.filename || '') && a.content
+    );
+    if (xlsAttachment) {
+      log.push(`Attachment ditemukan: "${xlsAttachment.filename}" (${Math.round(xlsAttachment.size / 1024)} KB)`);
+      return {
+        attachment:  xlsAttachment.content,   // Buffer langsung dari email
+        link:        null,
+        password:    null,
+        periodLabel,
+        subject:     subjectText,
+      };
+    }
+
+    // ── Fallback: ekstrak link + password dari body ──
+    const body = parsed.text || '';
+    const salesSection = body.split(/berikut update dashboard/i)[0] || body;
+
+    const linkMatch = salesSection.match(/Link\s*[:\-]\s*(https?:\/\/[^\s\r\n]+)/i);
+    const passMatch = salesSection.match(/Password\s*[:\-]\s*([^\s\r\n]+)/i);
+
+    if (!linkMatch || !passMatch) {
+      log.push('Tidak ada attachment dan gagal ekstrak link/password dari email');
+      log.push('Body sample: ' + body.substring(0, 300));
+      return null;
+    }
+
+    log.push(`Link Nextcloud ditemukan, password: ***${passMatch[1].trim().slice(-3)}`);
     return {
+      attachment:  null,
       link:        linkMatch[1].trim(),
       password:    passMatch[1].trim(),
       periodLabel,
