@@ -90,7 +90,12 @@ async function fetchEmailFromImap() {
     port:   CONFIG.imap.port,
     secure: true,
     auth:   { user: CONFIG.imap.user, pass: CONFIG.imap.pass },
-    logger: false,
+    logger: {
+      debug: (obj) => {},
+      info:  (obj) => {},
+      warn:  (obj) => log('IMAP WARN: ' + JSON.stringify(obj)),
+      error: (obj) => log('IMAP ERROR: ' + JSON.stringify(obj)),
+    },
     tls:    { rejectUnauthorized: false },
   });
 
@@ -98,6 +103,7 @@ async function fetchEmailFromImap() {
     await client.connect();
     log('IMAP terhubung');
     await client.mailboxOpen('INBOX');
+
 
     const uids = await client.search({
       from: MELATI_EMAIL, subject: SUBJECT_PREFIX,
@@ -405,6 +411,8 @@ async function uploadToSupabase(records, label, periodStart, periodEnd) {
 
 main().catch(err => {
   log(`ERROR FATAL: ${err.message}`);
+  if (err.response) log(`IMAP Response: ${JSON.stringify(err.response)}`);
+  if (err.responseCode) log(`IMAP Code: ${err.responseCode}`);
   log(err.stack || '');
   process.exit(1);
 });
