@@ -56,7 +56,7 @@ cat > "$PLIST_PATH" <<PLIST
     <key>StandardErrorPath</key>
     <string>$SCRIPT_DIR/sync.log</string>
     <key>RunAtLoad</key>
-    <false/>
+    <true/>
 </dict>
 </plist>
 PLIST
