@@ -30,9 +30,9 @@ else
   echo "[2/3] File .env sudah ada, skip."
 fi
 
-# 3. Setup LaunchAgent (cron macOS) — jam 12:00 WIB setiap hari
+# 3. Setup LaunchAgent (cron macOS) — setiap 1 jam sekali
 echo ""
-echo "[3/3] Setup LaunchAgent untuk auto-run jam 12:00 WIB..."
+echo "[3/3] Setup LaunchAgent untuk auto-run setiap 1 jam..."
 
 NODE_PATH=$(which node)
 PLIST_PATH="$HOME/Library/LaunchAgents/com.erasales.sync.plist"
@@ -49,13 +49,8 @@ cat > "$PLIST_PATH" <<PLIST
         <string>$NODE_PATH</string>
         <string>$SCRIPT_DIR/mac-sync.js</string>
     </array>
-    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key>
-        <integer>12</integer>
-        <key>Minute</key>
-        <integer>0</integer>
-    </dict>
+    <key>StartInterval</key>
+    <integer>3600</integer>
     <key>StandardOutPath</key>
     <string>$SCRIPT_DIR/sync.log</string>
     <key>StandardErrorPath</key>
