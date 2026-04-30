@@ -388,28 +388,50 @@ function parseNum(v) {
 async function uploadToSupabase(records, label, periodStart, periodEnd) {
   const supabase = createClient(CONFIG.supabase.url, CONFIG.supabase.key);
 
-  // Hapus data lama untuk periode ini
-  const { error: delErr } = await supabase
-    .from('sales_data')
-    .delete()
-    .eq('period_label', label);
-  if (delErr) log(`Warning delete: ${delErr.message}`);
+  // 1. Ambil upload aktif yang ada untuk di-nonaktifkan nanti
+  const { data: previousActive } = await supabase
+    .from('upload_history')
+    .select('id')
+    .eq('is_active', true);
+  const previousIds = (previousActive || []).map(u => u.id);
 
-  // Upload dalam batch 50
-  const BATCH = 50;
-  let uploaded = 0;
-  for (let i = 0; i < records.length; i += BATCH) {
-    const batch = records.slice(i, i + BATCH).map(r => ({
-      ...r,
+  // 2. Insert upload_history baru
+  const { data: upload, error: uploadErr } = await supabase
+    .from('upload_history')
+    .insert({
+      filename:     `auto-sync-${label}.xlsx`,
       period_label: label,
       period_start: periodStart,
       period_end:   periodEnd,
-      updated_at:   new Date().toISOString(),
-    }));
-    const { error } = await supabase.from('sales_data').insert(batch);
-    if (error) throw new Error(`Upload batch ${i}: ${error.message}`);
+      uploaded_by:  null,
+      is_active:    true,
+    })
+    .select()
+    .single();
+  if (uploadErr) throw new Error('Gagal insert upload_history: ' + uploadErr.message);
+  log(`Upload ID: ${upload.id}`);
+
+  // 3. Insert sales_summary dalam batch 50
+  const BATCH = 50;
+  let uploaded = 0;
+  for (let i = 0; i < records.length; i += BATCH) {
+    const batch = records.slice(i, i + BATCH).map(r => ({ ...r, upload_id: upload.id }));
+    const { error } = await supabase.from('sales_summary').insert(batch);
+    if (error) {
+      // Rollback
+      await supabase.from('sales_summary').delete().eq('upload_id', upload.id);
+      await supabase.from('upload_history').delete().eq('id', upload.id);
+      throw new Error(`Upload batch ${i}: ${error.message}`);
+    }
     uploaded += batch.length;
     log(`  Uploaded ${uploaded}/${records.length}`);
+  }
+
+  // 4. Nonaktifkan upload lama
+  if (previousIds.length > 0) {
+    await supabase.from('upload_history').update({ is_active: false }).in('id', previousIds);
+    await supabase.from('sales_summary').delete().in('upload_id', previousIds);
+    log(`Upload lama (${previousIds.length}) dinonaktifkan.`);
   }
 }
 
