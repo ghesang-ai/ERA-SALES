@@ -7,6 +7,9 @@
   publish = "dashboard"
   functions = "dashboard/netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+
 [[headers]]
   for = "/*"
   [headers.values]
