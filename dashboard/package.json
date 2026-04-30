@@ -1,0 +1,12 @@
+{
+  "name": "era-sales-dashboard",
+  "version": "1.0.0",
+  "description": "ERA-SALES Dashboard Netlify Functions",
+  "dependencies": {
+    "@netlify/functions": "^2.8.1",
+    "@supabase/supabase-js": "^2.49.4",
+    "imapflow": "^1.0.169",
+    "mailparser": "^3.7.2",
+    "xlsx": "^0.18.5"
+  }
+}
