@@ -3,11 +3,11 @@
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_MODELS = [
+  'claude-haiku-4-5-20251001',
+  'claude-3-5-haiku-20241022',
+  'claude-3-5-sonnet-20241022',
+  'claude-sonnet-4-6',
   'claude-3-haiku-20240307',
-  'claude-3-5-haiku-latest',
-  'claude-3-5-sonnet-latest',
-  'claude-3-7-sonnet-latest',
-  'claude-sonnet-4-20250514',
 ];
 
 exports.handler = async function(event) {
@@ -154,4 +154,4 @@ Berikan struktur yang rapi agar mudah dibaca di dashboard.`,
       }),
     };
   }
-};  
+};

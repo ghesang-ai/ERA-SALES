@@ -20,12 +20,18 @@ function renderDailyChart(records, selectedLob) {
     chartRows.flatMap(r => Object.keys(r.daily_sales || {}))
   )].sort();
 
-  // Filter hanya tanggal dari bulan yang sama dengan tanggal terbaru
-  // (agar kolom baseline MoM bulan lalu tidak ikut tampil)
+  // Filter ke bulan yang paling banyak datanya (dominant month),
+  // bukan sekadar bulan terakhir — agar tanggal batas seperti "2026-05-01"
+  // tidak menggusur seluruh data bulan aktif.
   let allDates = rawDates;
   if (rawDates.length > 0) {
-    const latestMonth = rawDates[rawDates.length - 1].substring(0, 7); // "2026-04"
-    allDates = rawDates.filter(d => d.startsWith(latestMonth));
+    const monthCounts = {};
+    rawDates.forEach(d => {
+      const m = d.substring(0, 7);
+      monthCounts[m] = (monthCounts[m] || 0) + 1;
+    });
+    const dominantMonth = Object.entries(monthCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    allDates = rawDates.filter(d => d.startsWith(dominantMonth || ''));
   }
 
   if (allDates.length === 0) {
