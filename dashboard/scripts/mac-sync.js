@@ -100,12 +100,13 @@ async function fetchEmailFromImap() {
     await client.mailboxOpen('INBOX');
 
 
+    // Cari by subject saja (email masuk via forward, FROM bukan Melati)
     const uids = await client.search({
-      from: MELATI_EMAIL, subject: SUBJECT_PREFIX,
+      subject: SUBJECT_PREFIX,
     }, { uid: true });
 
     if (!uids || uids.length === 0) {
-      log('Tidak ada email dari Melati'); return null;
+      log('Tidak ada email dengan subject Sales vs Stock'); return null;
     }
 
     const latestUid = Math.max(...uids);
