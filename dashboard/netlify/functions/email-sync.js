@@ -143,78 +143,113 @@ async function downloadFromNextcloud(shareUrl, password, log) {
 
   const token   = tokenMatch[1];
   const baseUrl = 'https://drive.erajaya.com';
+  const UA      = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124 Safari/537.36';
+
   log.push(`Token: ${token}, Password: ${password ? '***' + password.slice(-3) : 'KOSONG!'}`);
 
-  // ── Strategy 1: Authenticate dulu via AJAX, lalu download pakai cookie ──
+  // ── Step 0: GET halaman share → ambil requesttoken CSRF + session cookie ──
+  let sessionCookie = '';
+  let requesttoken  = '';
   try {
-    log.push('Strategy 1: Nextcloud authenticate + download...');
-    const authUrl = `${baseUrl}/index.php/s/${token}/authenticate/ajax`;
-    const authRes = await fetch(authUrl, {
+    const pageRes = await fetch(`${baseUrl}/index.php/s/${token}`, {
+      headers: { 'User-Agent': UA },
+      redirect: 'follow',
+    });
+    log.push(`Page GET: ${pageRes.status}`);
+
+    // Ambil semua set-cookie (Node 18+ punya getSetCookie())
+    const allCookies = typeof pageRes.headers.getSetCookie === 'function'
+      ? pageRes.headers.getSetCookie()
+      : [pageRes.headers.get('set-cookie') || ''];
+    sessionCookie = allCookies.map(c => c.split(';')[0]).filter(Boolean).join('; ');
+    if (sessionCookie) log.push(`Session cookie: ${sessionCookie.substring(0, 40)}...`);
+
+    const html   = await pageRes.text();
+    const rtMatch = html.match(/data-requesttoken="([^"]+)"/);
+    if (rtMatch) {
+      requesttoken = rtMatch[1];
+      log.push(`requesttoken: OK (${requesttoken.length} chars)`);
+    } else {
+      log.push('requesttoken tidak ditemukan — coba tanpa CSRF');
+    }
+  } catch (e) {
+    log.push(`Page GET error: ${e.message}`);
+  }
+
+  // ── Strategy 1: Nextcloud AJAX authenticate → download dengan session ──
+  try {
+    log.push('Strategy 1: authenticate/ajax...');
+    const authRes = await fetch(`${baseUrl}/index.php/s/${token}/authenticate/ajax`, {
       method: 'POST',
       headers: {
         'Content-Type':     'application/x-www-form-urlencoded',
         'X-Requested-With': 'XMLHttpRequest',
+        'Requesttoken':     requesttoken,
+        'User-Agent':       UA,
+        ...(sessionCookie ? { 'Cookie': sessionCookie } : {}),
       },
-      body: `password=${encodeURIComponent(password)}&requesttoken=`,
+      body: `password=${encodeURIComponent(password)}&requesttoken=${encodeURIComponent(requesttoken)}`,
       redirect: 'follow',
     });
-    log.push(`Auth status: ${authRes.status}`);
 
-    // Kumpulkan semua cookie dari response
-    const rawCookies = authRes.headers.raw?.()?.['set-cookie'] || [];
-    const cookieStr  = Array.isArray(rawCookies)
-      ? rawCookies.map(c => c.split(';')[0]).join('; ')
-      : (authRes.headers.get('set-cookie') || '').split(';')[0];
+    // Perbarui session cookie dari auth response
+    const authCookies = typeof authRes.headers.getSetCookie === 'function'
+      ? authRes.headers.getSetCookie()
+      : [authRes.headers.get('set-cookie') || ''];
+    const newCookie = authCookies.map(c => c.split(';')[0]).filter(Boolean).join('; ');
+    if (newCookie) sessionCookie = [sessionCookie, newCookie].filter(Boolean).join('; ');
 
-    // Download dengan cookie
-    const dlUrl = `${baseUrl}/index.php/s/${token}/download`;
-    const dlHeaders = { 'User-Agent': 'Mozilla/5.0' };
-    if (cookieStr) dlHeaders['Cookie'] = cookieStr;
+    const authText = await authRes.text();
+    log.push(`Auth: ${authRes.status} — ${authText.substring(0, 80)}`);
 
-    const dlRes = await fetch(dlUrl, { headers: dlHeaders, redirect: 'follow' });
-    log.push(`Download status: ${dlRes.status}`);
-
-    if (dlRes.ok) {
-      const ct = dlRes.headers.get('content-type') || '';
-      if (!ct.includes('text/html')) {
-        log.push('Strategy 1 berhasil!');
-        return Buffer.from(await dlRes.arrayBuffer());
-      }
-      log.push(`Strategy 1: content-type tidak valid: ${ct}`);
+    // Download setelah auth (berhasil atau tidak — session mungkin sudah ter-set)
+    const dlRes = await fetch(`${baseUrl}/index.php/s/${token}/download`, {
+      headers: {
+        'User-Agent': UA,
+        ...(sessionCookie ? { 'Cookie': sessionCookie } : {}),
+      },
+      redirect: 'follow',
+    });
+    const ct = dlRes.headers.get('content-type') || '';
+    log.push(`Download: ${dlRes.status}, CT: ${ct}`);
+    if (dlRes.ok && !ct.includes('text/html')) {
+      log.push('Strategy 1 berhasil!');
+      return Buffer.from(await dlRes.arrayBuffer());
     }
   } catch (e) {
     log.push(`Strategy 1 error: ${e.message}`);
   }
 
-  // ── Strategy 2: WebDAV Basic Auth (token:password) ──
+  // ── Strategy 2: WebDAV Basic Auth ──
   try {
     log.push('Strategy 2: WebDAV Basic Auth...');
-    const credentials = Buffer.from(`${token}:${password}`).toString('base64');
-    const webdavUrl   = `${baseUrl}/public.php/webdav/`;
+    const cred      = Buffer.from(`${token}:${password}`).toString('base64');
+    const webdavUrl = `${baseUrl}/public.php/webdav/`;
 
-    // PROPFIND untuk dapat nama file
     const propfind = await fetch(webdavUrl, {
       method: 'PROPFIND',
       headers: {
-        'Authorization':    `Basic ${credentials}`,
-        'Depth':            '1',
-        'Content-Type':     'application/xml',
-        'OCS-APIREQUEST':   'true',
+        'Authorization':  `Basic ${cred}`,
+        'Depth':          '1',
+        'Content-Type':   'application/xml',
+        'OCS-APIREQUEST': 'true',
+        'User-Agent':     UA,
       },
     });
-    log.push(`PROPFIND status: ${propfind.status}`);
+    log.push(`PROPFIND: ${propfind.status}`);
 
     if (propfind.ok) {
-      const xml       = await propfind.text();
-      const fileMatch = xml.match(/<d:href>[^<]*\/([^<\/]+\.xlsx?)<\/d:href>/i);
-      const filename  = fileMatch ? decodeURIComponent(fileMatch[1]) : null;
-      const fileUrl   = filename ? `${webdavUrl}${encodeURIComponent(filename)}` : webdavUrl;
-      if (filename) log.push(`File WebDAV: ${filename}`);
+      const xml  = await propfind.text();
+      const fm   = xml.match(/<d:href>[^<]*\/([^<\/]+\.xlsx?)<\/d:href>/i);
+      const fUrl = fm
+        ? `${webdavUrl}${encodeURIComponent(decodeURIComponent(fm[1]))}`
+        : webdavUrl;
+      if (fm) log.push(`File: ${fm[1]}`);
 
-      const getRes = await fetch(fileUrl, {
-        headers: { 'Authorization': `Basic ${credentials}` },
+      const getRes = await fetch(fUrl, {
+        headers: { 'Authorization': `Basic ${cred}`, 'User-Agent': UA },
       });
-      log.push(`WebDAV GET status: ${getRes.status}`);
+      log.push(`WebDAV GET: ${getRes.status}`);
       if (getRes.ok) {
         log.push('Strategy 2 berhasil!');
         return Buffer.from(await getRes.arrayBuffer());
@@ -224,29 +259,24 @@ async function downloadFromNextcloud(shareUrl, password, log) {
     log.push(`Strategy 2 error: ${e.message}`);
   }
 
-  // ── Strategy 3: Direct POST /download dengan password di body ──
+  // ── Strategy 3: Direct download tanpa auth (public link mungkin tidak perlu password) ──
   try {
-    log.push('Strategy 3: POST /download dengan password...');
-    const dlUrl = shareUrl.replace(/\?.*$/, '').replace(/\/$/, '') + '/download';
-    const res3  = await fetch(dlUrl, {
-      method:   'POST',
-      headers:  { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body:     `password=${encodeURIComponent(password)}`,
+    log.push('Strategy 3: direct GET /download tanpa auth...');
+    const res3 = await fetch(`${baseUrl}/index.php/s/${token}/download`, {
+      headers: { 'User-Agent': UA },
       redirect: 'follow',
     });
-    log.push(`Strategy 3 status: ${res3.status}`);
-    if (res3.ok) {
-      const ct = res3.headers.get('content-type') || '';
-      if (!ct.includes('text/html')) {
-        log.push('Strategy 3 berhasil!');
-        return Buffer.from(await res3.arrayBuffer());
-      }
+    const ct3 = res3.headers.get('content-type') || '';
+    log.push(`Strategy 3: ${res3.status}, CT: ${ct3}`);
+    if (res3.ok && !ct3.includes('text/html')) {
+      log.push('Strategy 3 berhasil!');
+      return Buffer.from(await res3.arrayBuffer());
     }
   } catch (e) {
     log.push(`Strategy 3 error: ${e.message}`);
   }
 
-  throw new Error('Download gagal: semua strategy gagal (WebDAV 403, Auth cookie, POST download)');
+  throw new Error('Nextcloud 403: semua strategy gagal. Server mungkin memblokir IP Netlify atau password salah.');
 }
 
 // ─── PARSE EXCEL (port dari upload.js) ──────────────────────
