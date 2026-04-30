@@ -145,6 +145,24 @@
     }
     .claude-dot{ width:6px;height:6px;border-radius:50%;background:#9B8FFF;animation:blink 1.5s ease-in-out infinite; }
 
+    /* Model selector */
+    .model-selector {
+      display:flex; gap:.375rem; margin-bottom:.625rem;
+      background:rgba(255,255,255,.08); border-radius:10px; padding:.3rem;
+    }
+    .model-btn {
+      flex:1; padding:.45rem .25rem; border:none; border-radius:7px;
+      font-size:.68rem; font-weight:700; cursor:pointer;
+      background:transparent; color:rgba(255,255,255,.6);
+      transition:all .2s; text-align:center; line-height:1.3;
+    }
+    .model-btn.active {
+      background:rgba(255,255,255,.18); color:#fff;
+      box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+    .model-btn-name { font-size:.7rem; font-weight:800; display:block; }
+    .model-btn-desc { font-size:.58rem; opacity:.75; display:block; }
+
     /* Generate button */
     .ai-gen-btn {
       width:100%; padding:.875rem 1rem;
@@ -330,6 +348,22 @@
               <div class="ai-hdr-sub">Claude akan menganalisis semua data Samsung A57 & A37 Region 5</div>
             </div>
           </div>
+          <!-- Model Selector -->
+          <div class="model-selector">
+            <button class="model-btn" data-model="claude-haiku-4-5-20251001" onclick="selectModel(this)">
+              <span class="model-btn-name">⚡ Haiku</span>
+              <span class="model-btn-desc">Cepat · Hemat</span>
+            </button>
+            <button class="model-btn active" data-model="claude-3-5-sonnet-20241022" onclick="selectModel(this)">
+              <span class="model-btn-name">⭐ Sonnet</span>
+              <span class="model-btn-desc">Terbaik · Analisis Dalam</span>
+            </button>
+            <button class="model-btn" data-model="auto" onclick="selectModel(this)">
+              <span class="model-btn-name">🔄 Auto</span>
+              <span class="model-btn-desc">Fallback Otomatis</span>
+            </button>
+          </div>
+
           <button class="ai-gen-btn" id="gen-btn" onclick="generateAnalysis()">
             <span id="gen-btn-icon">✦</span>
             <span id="gen-btn-text">Generate Analisis dengan Claude</span>
@@ -678,6 +712,17 @@ Berikan ANALISIS KOMPREHENSIF dalam 4 metode berikut, masing-masing dengan sub-p
 Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionable, dan spesifik — bukan generik. Sertakan nama TSH spesifik dalam analisis.`;
   }
 
+  // ── Model Selector ───────────────────────────────────────────
+  function selectModel(el) {
+    document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function getSelectedModel() {
+    const active = document.querySelector('.model-btn.active');
+    return active ? active.dataset.model : 'auto';
+  }
+
   // ── Call Claude via Netlify Function ────────────────────────
   async function generateAnalysis() {
     const btn      = document.getElementById('gen-btn');
@@ -716,7 +761,7 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
       const res = await fetch('/.netlify/functions/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: buildPrompt(), brand: 'Samsung', week: 'April 2026' }),
+        body: JSON.stringify({ prompt: buildPrompt(), brand: 'Samsung', week: 'April 2026', selectedModel: getSelectedModel() }),
       });
       const raw = await res.text();
       try {

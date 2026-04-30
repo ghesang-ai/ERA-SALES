@@ -55,6 +55,7 @@ exports.handler = async function(event) {
   const prompt = typeof payload.prompt === 'string' ? payload.prompt.trim() : '';
   const brand = typeof payload.brand === 'string' ? payload.brand.trim() : 'Unknown';
   const week = typeof payload.week === 'string' ? payload.week.trim() : 'Unknown';
+  const selectedModel = typeof payload.selectedModel === 'string' ? payload.selectedModel.trim() : 'auto';
 
   if (!prompt) {
     return {
@@ -64,10 +65,15 @@ exports.handler = async function(event) {
     };
   }
 
+  // Jika user memilih model spesifik (bukan auto), letakkan di urutan pertama
+  const modelsToTry = selectedModel !== 'auto' && ANTHROPIC_MODELS.includes(selectedModel)
+    ? [selectedModel, ...ANTHROPIC_MODELS.filter(m => m !== selectedModel)]
+    : ANTHROPIC_MODELS;
+
   try {
     let lastError = null;
 
-    for (const model of ANTHROPIC_MODELS) {
+    for (const model of modelsToTry) {
       const anthropicResponse = await fetch(ANTHROPIC_URL, {
         method: 'POST',
         headers: {
