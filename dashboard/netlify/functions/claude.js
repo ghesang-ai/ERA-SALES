@@ -82,7 +82,8 @@ exports.handler = async function(event) {
 Brand yang sedang dianalisis: ${brand}.
 Periode analisis: ${week}.
 Gunakan Bahasa Indonesia yang profesional, tajam, spesifik, dan actionable.
-Berikan struktur yang rapi agar mudah dibaca di dashboard.`,
+Berikan struktur yang rapi agar mudah dibaca di dashboard.
+PENTING: Sebutan staff penjualan di toko Erafone/Erajaya Digital adalah ERO (Erafone Representative Officer), BUKAN SA atau Sales Associate. Selalu gunakan "ERO" dalam analisis.`,
           messages: [
             {
               role: 'user',

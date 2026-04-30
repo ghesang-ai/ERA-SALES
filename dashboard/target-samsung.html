@@ -450,7 +450,7 @@
           <div class="aspek-body">
             <div class="metric-grid">
               <div class="metric-box"><div class="metric-l">CSI Score</div><div class="metric-v" style="color:var(--success);">4.3/5</div><div class="metric-n">rata-rata R5</div></div>
-              <div class="metric-box"><div class="metric-l">Product Know.</div><div class="metric-v" style="color:var(--warning);">62%</div><div class="metric-n">SA lulus PK</div></div>
+              <div class="metric-box"><div class="metric-l">Product Know.</div><div class="metric-v" style="color:var(--warning);">62%</div><div class="metric-n">ERO lulus PK</div></div>
               <div class="metric-box"><div class="metric-l">Complaint Rate</div><div class="metric-v" style="color:var(--success);">0.8%</div><div class="metric-n">dari transaksi</div></div>
               <div class="metric-box"><div class="metric-l">Promo Comply</div><div class="metric-v" style="color:var(--warning);">71%</div><div class="metric-n">toko jalankan</div></div>
             </div>
@@ -481,9 +481,9 @@
           </div>
           <div class="aspek-body">
             <div class="metric-grid">
-              <div class="metric-box"><div class="metric-l">SA Lulus PK</div><div class="metric-v" style="color:var(--warning);">62%</div><div class="metric-n">dari total SA R5</div></div>
+              <div class="metric-box"><div class="metric-l">ERO Lulus PK</div><div class="metric-v" style="color:var(--warning);">62%</div><div class="metric-n">dari total ERO R5</div></div>
               <div class="metric-box"><div class="metric-l">PK Target</div><div class="metric-v">100%</div><div class="metric-n">harus lulus</div></div>
-              <div class="metric-box"><div class="metric-l">Financing App</div><div class="metric-v" style="color:var(--danger);">41%</div><div class="metric-n">SA aktif pakai</div></div>
+              <div class="metric-box"><div class="metric-l">Financing App</div><div class="metric-v" style="color:var(--danger);">41%</div><div class="metric-n">ERO aktif pakai</div></div>
               <div class="metric-box"><div class="metric-l">Konversi Kredit</div><div class="metric-v" style="color:var(--success);">28%</div><div class="metric-n">dari penjualan</div></div>
             </div>
           </div>
@@ -650,9 +650,9 @@ ${tshSummary}
 
 📋 DATA 5 ASPEK:
 SALES: Achievement 23.1%, Run rate 49 unit/hari, Gap -4.267 unit dari target April
-LAYANAN: CSI 4.3/5, Product Knowledge SA 62% lulus, Complaint Rate 0.8%, Promo Compliance 71%
+LAYANAN: CSI 4.3/5, Product Knowledge ERO 62% lulus, Complaint Rate 0.8%, Promo Compliance 71%
 OPERATION: Stok Availability 78%, Display Compliance 65%, Store Readiness 84%, Stock Turnover 0.23x
-PEOPLE: 62% SA lulus PK Samsung, Financing App adoption 41%, Konversi Kredit 28%
+PEOPLE: 62% ERO lulus PK Samsung, Financing App adoption 41%, Konversi Kredit 28%
 FINANCIAL: Margin Aktual 8.2% vs Target 10.5%, Revenue MTD est. Rp3.97 Miliar
 
 ---
@@ -710,14 +710,19 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
       loadSub.textContent = tips[ti++ % tips.length];
     }, 1800);
 
+    let data = {};
     try {
-      const res = await fetch('/.netlify/functions/ai-insights', {
+      const res = await fetch('/.netlify/functions/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: buildPrompt(), brand: 'Samsung', week: 'April 2026' }),
       });
-
-      const data = await res.json();
+      const raw = await res.text();
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = { error: raw || `HTTP ${res.status}` };
+      }
       clearInterval(tipInterval);
 
       if (!res.ok || data.error) {
@@ -739,8 +744,16 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
         result.style.display = 'block';
         content.innerHTML = formatMarkdown(getDemoContent());
       } else {
+        const extra = [];
+        if (data?.model) extra.push(`Model terakhir: <code>${data.model}</code>`);
+        if (Array.isArray(data?.tried_models) && data.tried_models.length) {
+          extra.push(`Model yang dicoba: <code>${data.tried_models.join('</code>, <code>')}</code>`);
+        }
+        if (data?.details?.message) extra.push(`Detail API: ${data.details.message}`);
+
         error.style.display = 'block';
         error.innerHTML = `⚠️ <strong>Gagal menghubungi Claude:</strong> ${err.message}<br><br>
+          ${extra.length ? `${extra.join('<br>')}<br><br>` : ''}
           Pastikan <code>ANTHROPIC_API_KEY</code> sudah dikonfigurasi di Netlify Environment Variables.<br>
           Buka: app.netlify.com → Site Settings → Environment Variables`;
       }
@@ -786,9 +799,9 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
 ### 🔍 DIAGNOSTIC ANALYSIS — Mengapa Terjadi?
 
 **Root Cause Utama:**
-- **Product Knowledge gap** — 38% SA belum lulus PK Samsung A57/A37, langsung berdampak pada kemampuan closing
+- **Product Knowledge gap** — 38% ERO belum lulus PK Samsung A57/A37, langsung berdampak pada kemampuan closing
 - **Display compliance rendah (65%)** — toko tanpa display benar rata-rata jual 2x lebih sedikit
-- **Financing App adoption hanya 41%** — SA yang tidak pakai app kehilangan potensi konversi kredit 19%
+- **Financing App adoption hanya 41%** — ERO yang tidak pakai app kehilangan potensi konversi kredit 19%
 - **Stok tidak merata** — availability 78% artinya 22% toko tidak bisa jual karena stok kosong
 
 **Analisis per TSH Kritis:**
@@ -811,8 +824,8 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
 
 **Intervensi Segera (Minggu 1 Mei):**
 - Coaching intensif untuk Abdillah dan Rendi Januardi — store visit harian, target 5 unit/toko/hari
-- Mandatory PK training Samsung A57/A37 — target 100% SA lulus sebelum 15 Mei
-- Aktivasi Financing App — insentif untuk SA yang close 3+ unit via app
+- Mandatory PK training Samsung A57/A37 — target 100% ERO lulus sebelum 15 Mei
+- Aktivasi Financing App — insentif untuk ERO yang close 3+ unit via app
 
 **Strategi Struktural (Mei–Juni):**
 - Replikasi best practice Liastuti dan Rendy Nur Setiawan ke TSH lain
@@ -825,10 +838,10 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
 Store visit harian, target minimum 5 unit/toko/hari, monitoring WhatsApp group 2x sehari
 
 **2. 📚 TINGGI — Mandatory PK Training Samsung**
-100% SA harus lulus PK A57/A37 sebelum 15 Mei. Fokus pada USP kamera dan benefit cicilan
+100% ERO harus lulus PK A57/A37 sebelum 15 Mei. Fokus pada USP kamera dan benefit cicilan
 
 **3. 💳 SEDANG — Aktivasi Financing App 80%**
-SA aktif di app → konversi kredit naik dari 9% ke 28%. Gamifikasi dengan reward mingguan
+ERO aktif di app → konversi kredit naik dari 9% ke 28%. Gamifikasi dengan reward mingguan
 
 **4. 🏪 SEDANG — Display Audit & Realokasi Stok**
 Audit planogram semua toko TSH underperforming. Koordinasi Samsung CM untuk realokasi stok
