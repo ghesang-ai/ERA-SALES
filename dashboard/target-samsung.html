@@ -258,6 +258,68 @@
       line-height:1.6;
     }
 
+    /* ── Claude Section (violet theme) ── */
+    .ai-section.claude-section {
+      background: linear-gradient(145deg, #2D1B69 0%, #4C3699 50%, #6C63FF 100%);
+    }
+    .claude-section .ai-hdr-icon {
+      background: linear-gradient(135deg, #9B8FFF, #6C63FF);
+    }
+    .claude-section .model-btn {
+      border-color: rgba(255,255,255,.15);
+    }
+    .claude-section .model-btn.active {
+      background: rgba(255,255,255,.2);
+      border-color: rgba(255,255,255,.5);
+    }
+    .claude-section .ai-gen-btn {
+      background: linear-gradient(135deg, #9B8FFF, #6C63FF);
+    }
+    .claude-section .ai-gen-btn:hover {
+      background: linear-gradient(135deg, #B3A9FF, #8B80FF);
+    }
+    .claude-section .scope-pill {
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.2);
+    }
+    .claude-section .ai-result-label { color: #9B8FFF; }
+    .claude-section .ai-content h3 {
+      color: #6C63FF;
+      background: linear-gradient(135deg, rgba(108,99,255,.08), rgba(155,143,255,.04));
+      border-left-color: #6C63FF;
+    }
+    .claude-section .ai-content h4 { color: #9B8FFF; }
+    .claude-section .ai-dot {
+      background: linear-gradient(135deg, #9B8FFF, #6C63FF);
+    }
+    .claude-section .ai-regen-btn:hover { border-color: #9B8FFF; color: #9B8FFF; }
+
+    /* cl-model-btn = sama dengan model-btn tapi scope Claude section */
+    .cl-model-btn {
+      flex:1; padding:.5rem .375rem; border-radius:8px; cursor:pointer;
+      background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.15);
+      display:flex; flex-direction:column; align-items:center; gap:.15rem;
+      transition:all .2s;
+    }
+    .cl-model-btn.active {
+      background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.5);
+    }
+    .cl-model-btn:hover:not(.active) { background:rgba(255,255,255,.13); }
+
+    /* Divider antara dua section */
+    .ai-section-divider {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .5rem 0; margin-bottom: .625rem;
+    }
+    .ai-section-divider::before,
+    .ai-section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .ai-section-divider-label {
+      font-size: .65rem; font-weight: 700; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
+    }
+
     /* ── Custom Prompt ── */
     .custom-prompt-wrap {
       margin-bottom:.75rem;
@@ -365,7 +427,94 @@
         </div>
       </div>
 
-      <!-- ══ AI GENERATE SECTION ══ -->
+      <!-- ══ CLAUDE AI SECTION ══ -->
+      <div class="ai-section claude-section">
+        <div class="ai-section-header">
+          <div class="ai-hdr-row">
+            <div class="ai-hdr-icon">✦</div>
+            <div>
+              <div class="ai-hdr-title">Generate AI Analysis — Claude</div>
+              <div class="ai-hdr-sub">Claude (Anthropic) akan menganalisis semua data Samsung A57 & A37 Region 5</div>
+            </div>
+          </div>
+          <!-- Model Selector -->
+          <div class="model-selector">
+            <button class="cl-model-btn" data-model="claude-haiku-4-5-20251001" onclick="selectClaudeModel(this)">
+              <span class="model-btn-name">⚡ Haiku</span>
+              <span class="model-btn-desc">Cepat · Hemat</span>
+            </button>
+            <button class="cl-model-btn active" data-model="claude-3-5-sonnet-20241022" onclick="selectClaudeModel(this)">
+              <span class="model-btn-name">⭐ Sonnet</span>
+              <span class="model-btn-desc">Terbaik · Dalam</span>
+            </button>
+            <button class="cl-model-btn" data-model="auto" onclick="selectClaudeModel(this)">
+              <span class="model-btn-name">🔄 Auto</span>
+              <span class="model-btn-desc">Fallback Otomatis</span>
+            </button>
+          </div>
+
+          <!-- Custom Prompt Claude -->
+          <div class="custom-prompt-wrap">
+            <div class="custom-prompt-label">
+              ✏️ Custom Prompt <span>(Opsional)</span>
+            </div>
+            <textarea
+              id="cl-custom-prompt-input"
+              class="custom-prompt-textarea"
+              placeholder="Tambahkan instruksi khusus untuk analisis Claude (opsional)..."
+            ></textarea>
+          </div>
+
+          <button class="ai-gen-btn" id="cl-gen-btn" onclick="generateClaudeAnalysis()">
+            <span id="cl-gen-btn-icon">✦</span>
+            <span id="cl-gen-btn-text">Generate Analisis dengan Claude</span>
+          </button>
+          <div class="ai-scope-pills">
+            <span class="scope-pill">📊 Descriptive</span>
+            <span class="scope-pill">🔍 Diagnostic</span>
+            <span class="scope-pill">📈 Predictive</span>
+            <span class="scope-pill">🎯 Prescriptive</span>
+            <span class="scope-pill">💰 Sales</span>
+            <span class="scope-pill">🤝 Layanan</span>
+            <span class="scope-pill">⚙️ Operation</span>
+            <span class="scope-pill">👥 People</span>
+            <span class="scope-pill">📊 Financial</span>
+          </div>
+        </div>
+
+        <div class="ai-result-area">
+          <div class="ai-idle" id="cl-ai-idle">
+            <span class="ai-idle-icon">✦</span>
+            Tekan tombol di atas untuk meminta Claude menganalisis<br>
+            data Samsung A57 & A37 Region 5 secara lengkap —<br>
+            4 metode analisis · 5 aspek · rekomendasi prioritas
+          </div>
+          <div class="ai-loading" id="cl-ai-loading">
+            <div class="ai-dots">
+              <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
+            </div>
+            <div class="ai-loading-text">Claude sedang menganalisis data...</div>
+            <div class="ai-loading-sub" id="cl-ai-loading-sub">Menyiapkan analisis komprehensif Region 5</div>
+          </div>
+          <div class="ai-result" id="cl-ai-result">
+            <div class="ai-result-meta">
+              <div class="ai-result-label">
+                <span style="font-size:.9rem;">✦</span> Analisis oleh Claude
+              </div>
+              <button class="ai-regen-btn" onclick="generateClaudeAnalysis()">↻ Refresh</button>
+            </div>
+            <div class="ai-content" id="cl-ai-content"></div>
+          </div>
+          <div class="ai-error" id="cl-ai-error"></div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="ai-section-divider">
+        <span class="ai-section-divider-label">atau gunakan</span>
+      </div>
+
+      <!-- ══ DEEPSEEK AI SECTION ══ -->
       <div class="ai-section">
         <div class="ai-section-header">
           <div class="ai-hdr-row">
@@ -751,14 +900,23 @@ Berikan ANALISIS KOMPREHENSIF dalam 4 metode berikut, masing-masing dengan sub-p
 Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionable, dan spesifik — bukan generik. Sertakan nama TSH spesifik dalam analisis.`;
   }
 
-  // ── Model Selector ───────────────────────────────────────────
+  // ── Model Selector — DeepSeek ────────────────────────────────
   function selectModel(el) {
     document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
   }
-
   function getSelectedModel() {
     const active = document.querySelector('.model-btn.active');
+    return active ? active.dataset.model : 'auto';
+  }
+
+  // ── Model Selector — Claude ───────────────────────────────────
+  function selectClaudeModel(el) {
+    document.querySelectorAll('.cl-model-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function getSelectedClaudeModel() {
+    const active = document.querySelector('.cl-model-btn.active');
     return active ? active.dataset.model : 'auto';
   }
 
@@ -849,6 +1007,81 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
           ${extra.length ? `${extra.join('<br>')}<br><br>` : ''}
           Pastikan <code>ANTHROPIC_API_KEY</code> sudah dikonfigurasi di Netlify Environment Variables.<br>
           Buka: app.netlify.com → Site Settings → Environment Variables`;
+      }
+    } finally {
+      btn.disabled = false;
+      btnIcon.textContent = '✦';
+      btnText.textContent = 'Generate Ulang';
+    }
+  }
+
+  // ── Generate Analysis — Claude (Anthropic) ───────────────────
+  async function generateClaudeAnalysis() {
+    const btn     = document.getElementById('cl-gen-btn');
+    const btnIcon = document.getElementById('cl-gen-btn-icon');
+    const btnText = document.getElementById('cl-gen-btn-text');
+    const idle    = document.getElementById('cl-ai-idle');
+    const loading = document.getElementById('cl-ai-loading');
+    const result  = document.getElementById('cl-ai-result');
+    const content = document.getElementById('cl-ai-content');
+    const error   = document.getElementById('cl-ai-error');
+    const loadSub = document.getElementById('cl-ai-loading-sub');
+
+    btn.disabled = true;
+    btnIcon.textContent = '⟳';
+    btnText.textContent = 'Menganalisis...';
+    idle.style.display    = 'none';
+    result.style.display  = 'none';
+    error.style.display   = 'none';
+    loading.style.display = 'block';
+
+    const tips = [
+      'Membaca data 15 TSH Region 5...',
+      'Menganalisis tren per minggu...',
+      'Menghitung proyeksi EOM...',
+      'Menyusun rekomendasi prioritas...',
+      'Mengintegrasikan 5 aspek evaluasi...',
+    ];
+    let ti = 0;
+    const tipInterval = setInterval(() => { loadSub.textContent = tips[ti++ % tips.length]; }, 1800);
+
+    let data = {};
+    try {
+      const customPrompt = document.getElementById('cl-custom-prompt-input')?.value.trim() || '';
+
+      const res = await fetch('/.netlify/functions/claude-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: buildPrompt(),
+          brand: 'Samsung',
+          week: 'April 2026',
+          selectedModel: getSelectedClaudeModel(),
+          customPrompt,
+        }),
+      });
+      const raw = await res.text();
+      try { data = raw ? JSON.parse(raw) : {}; } catch { data = { error: raw || `HTTP ${res.status}` }; }
+      clearInterval(tipInterval);
+
+      if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+
+      loading.style.display = 'none';
+      result.style.display  = 'block';
+      content.innerHTML = formatMarkdown(data.content || '');
+
+    } catch (err) {
+      clearInterval(tipInterval);
+      loading.style.display = 'none';
+
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (isLocal) {
+        result.style.display = 'block';
+        content.innerHTML = formatMarkdown(getDemoContent());
+      } else {
+        error.style.display = 'block';
+        error.innerHTML = `⚠️ <strong>Gagal menghubungi Claude:</strong> ${err.message}<br><br>
+          Pastikan <code>ANTHROPIC_API_KEY</code> sudah dikonfigurasi di Netlify Environment Variables.`;
       }
     } finally {
       btn.disabled = false;
