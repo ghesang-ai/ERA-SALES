@@ -258,6 +258,32 @@
       line-height:1.6;
     }
 
+    /* ── Custom Prompt ── */
+    .custom-prompt-wrap {
+      margin-bottom:.75rem;
+    }
+    .custom-prompt-label {
+      display:flex; align-items:center; gap:.375rem;
+      font-size:.72rem; font-weight:700; color:rgba(255,255,255,.85);
+      margin-bottom:.375rem;
+    }
+    .custom-prompt-label span { font-size:.65rem; color:rgba(255,255,255,.5); font-weight:400; }
+    .custom-prompt-textarea {
+      width:100%; min-height:68px; max-height:160px;
+      background:rgba(255,255,255,.1);
+      border:1.5px solid rgba(255,255,255,.2);
+      border-radius:10px;
+      padding:.625rem .875rem;
+      font-size:.8rem; font-family:var(--font); color:#fff;
+      resize:vertical; outline:none; line-height:1.55;
+      transition:border-color .2s, background .2s;
+    }
+    .custom-prompt-textarea::placeholder { color:rgba(255,255,255,.4); }
+    .custom-prompt-textarea:focus {
+      border-color:rgba(255,255,255,.5);
+      background:rgba(255,255,255,.15);
+    }
+
     /* ── 5 Aspek ── */
     .aspek-card{ background:var(--card);border-radius:12px;overflow:hidden;margin-bottom:.5rem;box-shadow:var(--shadow); }
     .aspek-hdr { display:flex;align-items:center;gap:.625rem;padding:.875rem 1rem;cursor:pointer;transition:background .15s; }
@@ -291,7 +317,7 @@
         <div class="hdr-sub">A57 & A37 · Region 5 · April 2026</div>
       </div>
     </div>
-    <div class="ai-badge">✦ CLAUDE</div>
+    <div class="ai-badge">✦ DeepSeek</div>
   </header>
 
   <main style="max-width:900px;margin:0 auto;">
@@ -303,7 +329,7 @@
         <span class="hero-model">Galaxy A57 & A37</span>
       </div>
       <div class="hero-title">Target Sales Analysis<br>Region 5 — April 2026</div>
-      <div class="hero-sub">12-Week Campaign · AI by Claude (Anthropic)</div>
+      <div class="hero-sub">12-Week Campaign · AI by DeepSeek</div>
       <div class="sync-row">
         <span class="sync-dot"></span>
         <span class="sync-text">Data: 30 Apr 2026 · Sales vs Stock B2C R5</span>
@@ -346,18 +372,18 @@
             <div class="ai-hdr-icon">✦</div>
             <div>
               <div class="ai-hdr-title">Generate AI Analysis</div>
-              <div class="ai-hdr-sub">Claude akan menganalisis semua data Samsung A57 & A37 Region 5</div>
+              <div class="ai-hdr-sub">DeepSeek akan menganalisis semua data Samsung A57 & A37 Region 5</div>
             </div>
           </div>
           <!-- Model Selector -->
           <div class="model-selector">
-            <button class="model-btn" data-model="claude-haiku-4-5-20251001" onclick="selectModel(this)">
-              <span class="model-btn-name">⚡ Haiku</span>
+            <button class="model-btn active" data-model="deepseek-chat" onclick="selectModel(this)">
+              <span class="model-btn-name">⚡ V3 Chat</span>
               <span class="model-btn-desc">Cepat · Hemat</span>
             </button>
-            <button class="model-btn active" data-model="claude-3-5-sonnet-20241022" onclick="selectModel(this)">
-              <span class="model-btn-name">⭐ Sonnet</span>
-              <span class="model-btn-desc">Terbaik · Analisis Dalam</span>
+            <button class="model-btn" data-model="deepseek-reasoner" onclick="selectModel(this)">
+              <span class="model-btn-name">🧠 R1 Reasoner</span>
+              <span class="model-btn-desc">Dalam · Reasoning</span>
             </button>
             <button class="model-btn" data-model="auto" onclick="selectModel(this)">
               <span class="model-btn-name">🔄 Auto</span>
@@ -365,9 +391,21 @@
             </button>
           </div>
 
+          <!-- Custom Prompt -->
+          <div class="custom-prompt-wrap">
+            <div class="custom-prompt-label">
+              ✏️ Custom Prompt <span>(Opsional)</span>
+            </div>
+            <textarea
+              id="custom-prompt-input"
+              class="custom-prompt-textarea"
+              placeholder="Tambahkan instruksi khusus untuk analisis (opsional)... Contoh: Fokuskan ke toko dengan performa di bawah 20%, atau analisis kenapa W2 lebih baik dari W1."
+            ></textarea>
+          </div>
+
           <button class="ai-gen-btn" id="gen-btn" onclick="generateAnalysis()">
             <span id="gen-btn-icon">✦</span>
-            <span id="gen-btn-text">Generate Analisis dengan Claude</span>
+            <span id="gen-btn-text">Generate Analisis dengan DeepSeek</span>
           </button>
           <div class="ai-scope-pills">
             <span class="scope-pill">📊 Descriptive</span>
@@ -386,7 +424,7 @@
           <!-- idle -->
           <div class="ai-idle" id="ai-idle">
             <span class="ai-idle-icon">✦</span>
-            Tekan tombol di atas untuk meminta Claude menganalisis<br>
+            Tekan tombol di atas untuk meminta DeepSeek menganalisis<br>
             data Samsung A57 & A37 Region 5 secara lengkap —<br>
             4 metode analisis · 5 aspek · rekomendasi prioritas
           </div>
@@ -398,7 +436,7 @@
               <div class="ai-dot"></div>
               <div class="ai-dot"></div>
             </div>
-            <div class="ai-loading-text">Claude sedang menganalisis data...</div>
+            <div class="ai-loading-text">DeepSeek sedang menganalisis data...</div>
             <div class="ai-loading-sub" id="ai-loading-sub">Menyiapkan analisis komprehensif Region 5</div>
           </div>
 
@@ -406,7 +444,7 @@
           <div class="ai-result" id="ai-result">
             <div class="ai-result-meta">
               <div class="ai-result-label">
-                <span style="font-size:.9rem;">✦</span> Analisis oleh Claude
+                <span style="font-size:.9rem;">✦</span> Analisis oleh DeepSeek
               </div>
               <button class="ai-regen-btn" onclick="generateAnalysis()">
                 ↻ Refresh
@@ -759,10 +797,18 @@ Gunakan Bahasa Indonesia yang profesional. Berikan insight yang tajam, actionabl
 
     let data = {};
     try {
+      const customPrompt = document.getElementById('custom-prompt-input')?.value.trim() || '';
+
       const res = await fetch('/.netlify/functions/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: buildPrompt(), brand: 'Samsung', week: 'April 2026', selectedModel: getSelectedModel() }),
+        body: JSON.stringify({
+          prompt: buildPrompt(),
+          brand: 'Samsung',
+          week: 'April 2026',
+          selectedModel: getSelectedModel(),
+          customPrompt,
+        }),
       });
       const raw = await res.text();
       try {
