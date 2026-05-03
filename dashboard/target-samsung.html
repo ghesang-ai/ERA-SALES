@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/chatbot.css" />
   <style>
     :root {
       --sam:  #1428A0;
@@ -902,5 +903,39 @@ Review mingguan Senin pagi dengan Pak Andre menggunakan ERA-SALES AI Dashboard i
   // ── Init ─────────────────────────────────────────────────────
   buildTshList(1); buildTshList(2); buildTshList(3);
   </script>
+
+  <!-- ChatBot context: Samsung A57 & A37 target sales data -->
+  <script>
+    window.ERA_DASHBOARD_CONTEXT = {
+      page: 'Target Sales Samsung A57 & A37 — Region 5',
+      periode: 'April 2026',
+      brand: 'Samsung Galaxy A57 & A37',
+      regional: {
+        target12Minggu: '12.392 unit (A57: 8.783 | A37: 3.609)',
+        targetApril: '5.739 unit (W1+W2+W3)',
+        mtdAchieved: '1.325 unit (23.1%)',
+        runRateHarian: '49 unit/hari',
+        proyeksiEOM: '~1.472 unit',
+        gapTargetApril: '-4.267 unit',
+      },
+      progressMingguan: {
+        W1: { A57: '691/2.740 (25%)', A37: '233/1.091 (21%)' },
+        W2: { A57: '248/728 (34%)',   A37: '111/302 (37%)' },
+        W3: { A57: '25/653 (4%)',     A37: '17/225 (8%)' },
+      },
+      tshPerformer: {
+        terbaik: 'Liastuti (32% - TSH Terbaik)',
+        kritis: ['Abdillah (10%)', 'Mensi Alexander (12%)', 'Rendi Januardi (13%)'],
+      },
+      aspek5: {
+        sales:    'Achievement 23.1%, run rate 49/hari, gap -4.267 unit',
+        layanan:  'CSI 4.3/5, PK ERO 62% lulus, complaint 0.8%, promo compliance 71%',
+        operasi:  'Stok 78%, display 65%, store readiness 84%, turnover 0.23x',
+        people:   '62% ERO lulus PK Samsung, financing app 41%, konversi kredit 28%',
+        finansial: 'Margin 8.2% vs target 10.5%, revenue MTD est. Rp3.97M',
+      },
+    };
+  </script>
+  <script src="js/chatbot.js"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/chatbot.css" />
   <style>
     :root {
       --sam:   #1428A0; --sam-2: #1B74E4;
@@ -540,5 +541,30 @@
       });
     });
   </script>
+
+  <!-- ChatBot context: Target Sales brand overview -->
+  <script>
+    window.ERA_DASHBOARD_CONTEXT = {
+      page: 'Target Sales — Brand Performance Region 5',
+      periode: 'April 2026',
+      region: 'Region 5 (Jabodetabek & Banten)',
+      brands: {
+        Samsung: {
+          status: 'LIVE',
+          models: 'Galaxy A57 & A37',
+          mtd: '1.325 unit',
+          targetApril: '5.739 unit',
+          achievement: '23.1%',
+          link: 'target-samsung.html',
+        },
+        Apple: { status: 'Coming Soon' },
+        OPPO:  { status: 'Coming Soon' },
+        Vivo:  { status: 'Coming Soon' },
+        Xiaomi:{ status: 'Coming Soon' },
+      },
+      catatan: 'Hanya Samsung yang sudah live dengan data AI. Brand lain segera hadir.',
+    };
+  </script>
+  <script src="js/chatbot.js"></script>
 </body>
 </html>

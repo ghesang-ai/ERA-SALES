@@ -505,6 +505,23 @@ function renderKPIs(records, selectedLob) {
   setKPI('kpi-ytd',
     avgYtd != null ? (avgYtd >= 0 ? '+' : '') + avgYtd.toFixed(1) + '%' : '—',
     'Jan–Apr 2026', ytdClass);
+
+  // Expose KPI data to ChatBot context
+  const periodLabel = document.getElementById('period-label')?.textContent || '';
+  window.ERA_DASHBOARD_CONTEXT = Object.assign(window.ERA_DASHBOARD_CONTEXT || {}, {
+    page: 'Dashboard Utama ERA-SALES',
+    period: periodLabel,
+    lob: selectedLob,
+    kpi: {
+      mtdSales:    formatRupiah(totalMtd),
+      targetApril: formatRupiah(totalTarget),
+      achVsRofo:   pctAch != null ? pctAch.toFixed(1) + '%' : null,
+      estimasi:    formatRupiah(totalEst),
+      achVsEst:    pctAchEst != null ? pctAchEst.toFixed(1) + '%' : null,
+      yoyGrowth:   avgYoy != null ? avgYoy.toFixed(1) + '%' : null,
+      momGrowth:   avgMom != null ? avgMom.toFixed(1) + '%' : null,
+    },
+  });
 }
 
 function setKPI(id, value, sub, colorClass) {

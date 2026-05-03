@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/chatbot.css" />
   <style>
     .admin-tabs { display:flex; gap:0.5rem; margin-bottom:1.25rem; background:var(--bg-2); padding:4px; border-radius:12px; }
     .admin-tab  { flex:1; padding:0.6rem 0.5rem; border:none; border-radius:9px; font-size:0.85rem; font-weight:600; cursor:pointer; background:transparent; color:var(--text-2); transition:all .2s; }
@@ -455,5 +456,14 @@
       if (ok) loadKelolaAkses();
     }
   </script>
+
+  <script>
+    window.ERA_DASHBOARD_CONTEXT = {
+      page: 'Panel Admin ERA-SALES',
+      region: 'Region 5',
+      fungsi: 'Upload data Excel penjualan, kelola akses pengguna, pengaturan sistem',
+    };
+  </script>
+  <script src="js/chatbot.js"></script>
 </body>
 </html>
