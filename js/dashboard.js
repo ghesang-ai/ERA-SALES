@@ -303,9 +303,10 @@ const TSH_STORE_DATA = {
 
 let activeTshDrilldown = null; // tracks which TSH panel is open
 
-let allRecords  = [];
-let userProfile = null;
-let activeLob   = 'SEMUA';
+let allRecords    = [];
+let userProfile   = null;
+let activeLob     = 'SEMUA';
+let currentUpload = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Pastikan Supabase client sudah siap
@@ -354,7 +355,8 @@ async function loadDashboardData() {
       return;
     }
 
-    allRecords = salesData;
+    allRecords    = salesData;
+    currentUpload = activeUpload;
 
     // Update header periode
     document.getElementById('header-period').textContent = activeUpload.period_label || 'Region 5';
@@ -466,8 +468,14 @@ function renderKPIs(records, selectedLob) {
   // MTD
   setKPI('kpi-mtd', formatRupiah(totalMtd), '', null);
 
-  // Target
-  setKPI('kpi-target', formatRupiah(totalTarget), '', null);
+  // Target — label dinamis sesuai bulan periode aktif
+  const BULAN_ID = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  const periodText = (currentUpload && currentUpload.period_label) ? currentUpload.period_label : '';
+  const monthMatch = periodText.match(/(\d+)\s+(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)/i);
+  const bulanNama = monthMatch ? monthMatch[2] : null;
+  const targetLabel = document.getElementById('kpi-target-label');
+  if (targetLabel) targetLabel.textContent = bulanNama ? `Target ${bulanNama}` : 'Target Bulan Ini';
+  setKPI('kpi-target', totalTarget > 0 ? formatRupiah(totalTarget) : '—', totalTarget > 0 ? '' : 'ROFO belum tersedia', null);
 
   // % Ach vs ROFO
   const achClass = pctAch != null
