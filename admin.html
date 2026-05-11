@@ -40,10 +40,32 @@
 
     <div id="admin-content" class="hidden">
 
+      <!-- Auto Sync Section -->
+      <div class="card" style="border-left: 4px solid #1E3A7A;">
+        <div class="card-header" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div style="flex:1;">
+            <h3 class="card-title" style="margin:0;">Auto Sync dari Gmail</h3>
+            <p style="margin:4px 0 0; font-size:13px; color:#64748b;">
+              Baca email forward Melati di <strong>appshopindo@gmail.com</strong> → download Nextcloud → update dashboard
+            </p>
+          </div>
+          <button id="sync-btn" class="btn btn-primary" style="white-space:nowrap; min-width:140px;">
+            <span id="sync-btn-text">Sync Sekarang</span>
+          </button>
+        </div>
+        <div id="sync-result" class="hidden" style="margin-top:12px; padding:12px 14px; border-radius:8px; font-size:13px; line-height:1.6;"></div>
+        <div id="sync-log" class="hidden" style="margin-top:8px;">
+          <details>
+            <summary style="cursor:pointer; font-size:12px; color:#94a3b8; user-select:none;">Lihat log detail</summary>
+            <pre id="sync-log-pre" style="margin:8px 0 0; padding:10px; background:#0f172a; color:#94a3b8; border-radius:6px; font-size:11px; overflow-x:auto; white-space:pre-wrap;"></pre>
+          </details>
+        </div>
+      </div>
+
       <!-- Upload Section -->
       <div class="card upload-card">
         <div class="card-header">
-          <h3 class="card-title">Upload Data Harian</h3>
+          <h3 class="card-title">Upload Data Manual (Fallback)</h3>
         </div>
 
         <!-- Drop Zone -->
@@ -150,5 +172,53 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/upload.js"></script>
+  <script>
+    document.getElementById('sync-btn').addEventListener('click', async () => {
+      const btn      = document.getElementById('sync-btn');
+      const btnText  = document.getElementById('sync-btn-text');
+      const result   = document.getElementById('sync-result');
+      const logWrap  = document.getElementById('sync-log');
+      const logPre   = document.getElementById('sync-log-pre');
+
+      btn.disabled = true;
+      btnText.textContent = 'Sedang sync...';
+      result.className = 'hidden';
+      logWrap.className = 'hidden';
+
+      try {
+        const res  = await fetch('/.netlify/functions/email-sync');
+        const data = await res.json();
+
+        result.className = '';
+        logWrap.className = '';
+
+        if (data.status === 'success') {
+          result.style.background = '#dcfce7';
+          result.style.color      = '#15803d';
+          result.innerHTML = `<strong>Berhasil!</strong> ${data.records} records diupload. Periode: ${data.period}`;
+        } else if (data.status === 'no_email') {
+          result.style.background = '#fef9c3';
+          result.style.color      = '#92400e';
+          result.innerHTML = '<strong>Tidak ada email baru.</strong> Pastikan auto-forward aktif ke appshopindo@gmail.com';
+        } else {
+          result.style.background = '#fee2e2';
+          result.style.color      = '#b91c1c';
+          result.innerHTML = `<strong>Gagal:</strong> ${data.error || data.status}`;
+        }
+
+        if (data.log && data.log.length) {
+          logPre.textContent = data.log.join('\n');
+        }
+      } catch (err) {
+        result.className = '';
+        result.style.background = '#fee2e2';
+        result.style.color      = '#b91c1c';
+        result.innerHTML = '<strong>Error koneksi ke function.</strong> Coba lagi.';
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Sync Sekarang';
+      }
+    });
+  </script>
 </body>
 </html>

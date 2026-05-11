@@ -1,6 +1,7 @@
 // ERA-SALES — Auto Email Sync (Netlify Scheduled Function)
 // Jadwal: setiap hari 05:00 UTC = 12:00 WIB
-// Alur: IMAP → baca email Melati → download Nextcloud → parse Excel → upload Supabase
+// Alur: Gmail IMAP (appshopindo@gmail.com) → baca email forward Melati → download Nextcloud → parse Excel → upload Supabase
+// Catatan: email Melati (melati.fitriyani@erajaya.com) di-auto-forward ke appshopindo@gmail.com
 
 const { schedule } = require('@netlify/functions');
 const { ImapFlow }  = require('imapflow');
@@ -10,7 +11,6 @@ const { createClient } = require('@supabase/supabase-js');
 
 // ─── KONSTANTA ───────────────────────────────────────────────
 const LOB_NAMES = ['MARDIANSAH', 'ARIS FACHRUDIN', 'ANDI IRAWAN', 'RACHMAT'];
-const MELATI_EMAIL   = 'melati.fitriyani@erajaya.com';
 const SUBJECT_PREFIX = 'Sales vs Stock B2C Region 5';
 
 // ─── MAIN HANDLER ────────────────────────────────────────────
@@ -70,34 +70,35 @@ const handler = async (event) => {
   }
 };
 
-// ─── FETCH EMAIL VIA IMAP ────────────────────────────────────
+// ─── FETCH EMAIL VIA GMAIL IMAP ──────────────────────────────
+// Gmail App Password diperlukan: Google Account → Security → App Passwords
+// Set env vars: GMAIL_USER=appshopindo@gmail.com, GMAIL_PASS=<app-password-16-char>
 async function fetchEmailFromImap(log) {
   const client = new ImapFlow({
-    host:   process.env.IMAP_HOST || 'mail.erajaya.com',
-    port:   parseInt(process.env.IMAP_PORT || '993'),
+    host:   'imap.gmail.com',
+    port:   993,
     secure: true,
     auth: {
-      user: process.env.IMAP_USER,
-      pass: process.env.IMAP_PASS,
+      user: process.env.GMAIL_USER || 'appshopindo@gmail.com',
+      pass: process.env.GMAIL_PASS,
     },
     logger: false,
-    tls: { rejectUnauthorized: false },
   });
 
   try {
     await client.connect();
-    log.push('IMAP terhubung ke mail.erajaya.com');
+    log.push(`Gmail IMAP terhubung: ${process.env.GMAIL_USER || 'appshopindo@gmail.com'}`);
 
     await client.mailboxOpen('INBOX');
 
-    // Cari email dari Melati dengan subject Sales vs Stock
+    // Cari email (termasuk forward FW:/Fwd:) dengan subject Sales vs Stock
+    // Tidak filter by from karena email sudah di-forward
     const uids = await client.search({
-      from: MELATI_EMAIL,
       subject: SUBJECT_PREFIX,
     }, { uid: true });
 
     if (!uids || uids.length === 0) {
-      log.push('Tidak ada email dari Melati dengan subject tersebut');
+      log.push('Tidak ada email dengan subject "Sales vs Stock B2C Region 5" di Gmail');
       return null;
     }
 
