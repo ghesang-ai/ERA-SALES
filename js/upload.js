@@ -657,9 +657,9 @@ async function loadUserList() {
   `).join('');
 }
 
-// ─── BY STORE: Ach April per TSH ─────────────────────────────
-// Membaca sheet BY STORE, mengambil kolom OT (index 409, 0-based)
-// dan mengagresi rata-rata per TSH sebagai persentase
+// ─── BY STORE: Ach per TSH ───────────────────────────────────
+// Membaca sheet BY STORE, mengambil kolom OX (index 413, 0-based)
+// "Ach %" per toko lalu agregasi rata-rata per TSH
 function parseByStoreAchievement(wb) {
   const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'BY STORE');
   if (!sheetName || !wb.Sheets[sheetName]) return {};
@@ -667,8 +667,26 @@ function parseByStoreAchievement(wb) {
   const ws = wb.Sheets[sheetName];
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
 
-  const OT_COL = 409; // Kolom OT (0-based index)
-  const TSH_COL = 4;  // Kolom TSH (0-based index)
+  // ── Cari indeks kolom OX (Ach %) secara otomatis dari header ──
+  // Fallback ke index 413 (kolom OX, 0-based) jika header tidak ditemukan
+  const FALLBACK_OX = 413;
+  const TSH_COL = 4;  // Kolom TSH (0-based index, kolom E)
+
+  // Cari baris header (baris 0–4) yang mengandung kata "ach" dan "%"
+  let achCol = -1;
+  for (let i = 0; i < Math.min(5, raw.length); i++) {
+    const row = raw[i];
+    if (!row) continue;
+    for (let j = 0; j < row.length; j++) {
+      const h = String(row[j] || '').trim().toLowerCase();
+      if ((h.includes('ach') || h.includes('% ach') || h === 'ach %') && h.includes('%')) {
+        achCol = j;
+        break;
+      }
+    }
+    if (achCol >= 0) break;
+  }
+  const OX_COL = achCol >= 0 ? achCol : FALLBACK_OX;
 
   // Mulai dari baris ke-4 (index 3) — skip 3 header rows
   const tshMap = {};
@@ -676,7 +694,7 @@ function parseByStoreAchievement(wb) {
     const row = raw[i];
     if (!row) continue;
     const tsh = row[TSH_COL];
-    const val = row[OT_COL];
+    const val = row[OX_COL];
     if (!tsh || val === null || val === undefined) continue;
     const tshKey = String(tsh).trim().toUpperCase();
     if (!tshKey || tshKey === 'TSH') continue;
@@ -687,10 +705,12 @@ function parseByStoreAchievement(wb) {
   }
 
   // Hitung rata-rata dan konversi ke persen
+  // Nilai Excel percentage cell (raw:true) berupa desimal: 0.91 → 91%
+  // Guard: jika nilai sudah > 2 anggap sudah dalam persen, tidak perlu * 100
   const result = {};
   for (const [tsh, vals] of Object.entries(tshMap)) {
     const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    result[tsh] = avg * 100; // 1.15 → 115%
+    result[tsh] = Math.abs(avg) <= 2 ? avg * 100 : avg; // 0.91 → 91% | 91 → 91%
   }
   return result;
 }
