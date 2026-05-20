@@ -245,14 +245,14 @@ function parseExcel(file) {
         return;
       }
 
-      // Baca ach_april dari sheet BY STORE kolom OT, agregasi per TSH
-      const tshAchMap = parseByStoreAchievement(wb);
+      // Baca ach_april dari sheet BY STORE kolom OX, agregasi per TSH + per store
+      const { tshAvg, storeByCode } = parseByStoreAchievement(wb);
 
       // Isi ach_april untuk TSH rows
       for (const rec of records) {
         if (rec.row_type === 'TSH') {
           const key = (rec.tsh_name || '').toUpperCase();
-          rec.ach_april = tshAchMap[key] != null ? tshAchMap[key] : null;
+          rec.ach_april = tshAvg[key] != null ? tshAvg[key] : null;
         }
       }
       // Untuk LOB rows: rata-rata ach_april dari TSH di bawahnya
@@ -273,7 +273,7 @@ function parseExcel(file) {
       const periodEnd   = allDates[allDates.length - 1] || null;
       const autoLabel   = periodLabel || (periodStart ? `Periode ${periodStart} s/d ${periodEnd}` : 'Periode tidak diketahui');
 
-      parsedData = { records, periodLabel: autoLabel, periodStart, periodEnd, filename: file.name };
+      parsedData = { records, periodLabel: autoLabel, periodStart, periodEnd, filename: file.name, storeAchData: storeByCode };
 
       renderPreview(records, autoLabel);
 
@@ -496,12 +496,13 @@ function initSubmit() {
       const { data: upload, error: uploadErr } = await supabaseClient
         .from('upload_history')
         .insert({
-          filename:     parsedData.filename,
-          period_label: parsedData.periodLabel,
-          period_start: parsedData.periodStart,
-          period_end:   parsedData.periodEnd,
-          uploaded_by:  user.id,
-          is_active:    true
+          filename:        parsedData.filename,
+          period_label:    parsedData.periodLabel,
+          period_start:    parsedData.periodStart,
+          period_end:      parsedData.periodEnd,
+          uploaded_by:     user.id,
+          is_active:       true,
+          store_ach_data:  parsedData.storeAchData || {}
         })
         .select()
         .single();
@@ -694,42 +695,57 @@ async function loadUserList() {
   `).join('');
 }
 
-// ─── BY STORE: Ach April per TSH ─────────────────────────────
-// Membaca sheet BY STORE, mengambil kolom OT (index 409, 0-based)
-// dan mengagresi rata-rata per TSH sebagai persentase
+// ─── BY STORE: Ach per TSH + per Store ──────────────────────
+// Membaca sheet BY STORE, kolom OX (index 413) = Ach %
+// Returns { tshAvg: {TSH→avgPct}, storeByCode: {CODE→pct} }
 function parseByStoreAchievement(wb) {
   const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'BY STORE');
-  if (!sheetName || !wb.Sheets[sheetName]) return {};
+  if (!sheetName || !wb.Sheets[sheetName]) return { tshAvg: {}, storeByCode: {} };
 
   const ws = wb.Sheets[sheetName];
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
 
-  const OT_COL = 409; // Kolom OT (0-based index)
-  const TSH_COL = 4;  // Kolom TSH (0-based index)
+  const TSH_COL  = 4;    // Kolom E — nama TSH
+  const CODE_COL = 6;    // Kolom G — store code (M019, E777, dll)
+  const OX_COL   = 413;  // Kolom OX — Ach % (raw decimal: 0.91 = 91%)
 
-  // Mulai dari baris ke-4 (index 3) — skip 3 header rows
-  const tshMap = {};
+  const tshMap    = {};
+  const storeByCode = {};
+
+  // Data mulai dari baris index 3 (skip 3 baris header)
   for (let i = 3; i < raw.length; i++) {
     const row = raw[i];
     if (!row) continue;
-    const tsh = row[TSH_COL];
-    const val = row[OT_COL];
+    const tsh  = row[TSH_COL];
+    const val  = row[OX_COL];
+    const code = row[CODE_COL];
     if (!tsh || val === null || val === undefined) continue;
     const tshKey = String(tsh).trim().toUpperCase();
     if (!tshKey || tshKey === 'TSH') continue;
     const num = parseFloat(val);
-    if (isNaN(num) || num === 0) continue;
+    if (isNaN(num)) continue;
+    // Konversi: Excel percentage cell disimpan sebagai desimal (0.91 → 91%)
+    const pct = Math.abs(num) <= 2 ? num * 100 : num;
+    if (pct === 0) continue;
+
+    // Agregasi per TSH
     if (!tshMap[tshKey]) tshMap[tshKey] = [];
-    tshMap[tshKey].push(num);
+    tshMap[tshKey].push(pct);
+
+    // Per store code
+    if (code) {
+      const codeKey = String(code).trim().toUpperCase();
+      if (codeKey) storeByCode[codeKey] = pct;
+    }
   }
 
-  // Hitung rata-rata dan konversi ke persen
-  const result = {};
+  // Rata-rata per TSH
+  const tshAvg = {};
   for (const [tsh, vals] of Object.entries(tshMap)) {
-    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    result[tsh] = avg * 100; // 1.15 → 115%
+    tshAvg[tsh] = vals.reduce((a, b) => a + b, 0) / vals.length;
   }
-  return result;
+
+  return { tshAvg, storeByCode };
 }
 
 // ─── ERROR HELPER ────────────────────────────────────────────

@@ -308,6 +308,7 @@ let allRecords    = [];
 let userProfile   = null;
 let activeLob     = 'SEMUA';
 let currentUpload = null;
+let storeAchData  = {}; // {STORE_CODE: achPct} dari kolom OX sheet BY STORE
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Tunggu supabaseClient selesai diinisialisasi oleh config.js
@@ -361,6 +362,7 @@ async function loadDashboardData() {
 
     allRecords    = salesData;
     currentUpload = activeUpload;
+    storeAchData  = activeUpload.store_ach_data || {};
 
     // Update header periode
     document.getElementById('header-period').textContent = activeUpload.period_label || 'Region 5';
@@ -619,10 +621,10 @@ function renderRanking(records, selectedLob) {
 
       const stores = storeData;
       const rows = stores.map((s, i) => {
-        const achPct = s.ach || 0;
-        const achStr = achPct > 0
-          ? `<span class="store-ach-pos">${achPct.toFixed(1)}%</span>`
-          : `<span class="store-ach-zero">0%</span>`;
+        const achPct = storeAchData[(s.code || '').toUpperCase()] ?? null;
+        const achStr = achPct != null
+          ? `<span class="${achPct >= 100 ? 'store-ach-pos' : achPct >= 80 ? 'store-ach-warn' : 'store-ach-neg'}">${achPct.toFixed(1)}%</span>`
+          : `<span class="store-ach-zero">—</span>`;
         return `
           <tr class="${i % 2 === 0 ? 'row-even' : 'row-odd'}">
             <td class="store-col-no">${i + 1}</td>
