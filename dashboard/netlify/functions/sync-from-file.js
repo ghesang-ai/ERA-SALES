@@ -30,14 +30,14 @@ exports.handler = async (event) => {
     const buffer = Buffer.from(fileBase64, 'base64');
     log.push(`File diterima: ${Math.round(buffer.length / 1024)} KB`);
 
-    const { records, periodStart, periodEnd, autoLabel } = parseExcelBuffer(buffer, periodLabel, log);
+    const { records, periodStart, periodEnd, autoLabel, storeByCode } = parseExcelBuffer(buffer, periodLabel, log);
     log.push(`Parse selesai: ${records.length} records`);
 
     if (records.length === 0) {
       return { statusCode: 200, body: JSON.stringify({ status: 'parse_empty', log }) };
     }
 
-    await uploadToSupabase(records, autoLabel, periodStart, periodEnd, log);
+    await uploadToSupabase(records, autoLabel, periodStart, periodEnd, log, storeByCode);
     log.push('Upload ke Supabase selesai!');
 
     return {
@@ -137,9 +137,9 @@ function parseExcelBuffer(buffer, periodLabel, log) {
     });
   }
 
-  const tshAchMap = parseByStoreAchievement(wb);
+  const { tshAvg, storeByCode } = parseByStoreAchievement(wb);
   for (const rec of records) {
-    if (rec.row_type === 'TSH') rec.ach_april = tshAchMap[(rec.tsh_name || '').toUpperCase()] ?? null;
+    if (rec.row_type === 'TSH') rec.ach_april = tshAvg[(rec.tsh_name || '').toUpperCase()] ?? null;
   }
   for (const rec of records) {
     if (rec.row_type === 'LOB') {
@@ -154,7 +154,7 @@ function parseExcelBuffer(buffer, periodLabel, log) {
   if (!autoLabel) autoLabel = periodStart ? `Periode ${periodStart} s/d ${periodEnd}` : 'GAS Sync';
 
   log.push(`Period: ${periodStart} → ${periodEnd}`);
-  return { records, periodStart, periodEnd, autoLabel };
+  return { records, periodStart, periodEnd, autoLabel, storeByCode };
 }
 
 function mapColumns(headers) {
@@ -230,28 +230,31 @@ function parsePct(val) {
 
 function parseByStoreAchievement(wb) {
   const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'BY STORE');
-  if (!sheetName || !wb.Sheets[sheetName]) return {};
+  if (!sheetName || !wb.Sheets[sheetName]) return { tshAvg: {}, storeByCode: {} };
   const ws  = wb.Sheets[sheetName];
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
-  const OT_COL = 409, TSH_COL = 4;
-  const tshMap = {};
+  const OX_COL = 413, TSH_COL = 4, CODE_COL = 6; // OX=Ach%, E=TSH, G=Code
+  const tshMap = {}, storeByCode = {};
   for (let i = 3; i < raw.length; i++) {
     const row = raw[i]; if (!row) continue;
-    const tsh = row[TSH_COL], val = row[OT_COL];
+    const tsh = row[TSH_COL], val = row[OX_COL], code = row[CODE_COL];
     if (!tsh || val === null || val === undefined) continue;
     const tshKey = String(tsh).trim().toUpperCase();
     if (!tshKey || tshKey === 'TSH') continue;
-    const num = parseFloat(val); if (isNaN(num) || num === 0) continue;
+    const num = parseFloat(val); if (isNaN(num)) continue;
+    const pct = Math.abs(num) <= 2 ? num * 100 : num;
+    if (pct === 0) continue;
     if (!tshMap[tshKey]) tshMap[tshKey] = [];
-    tshMap[tshKey].push(num);
+    tshMap[tshKey].push(pct);
+    if (code) { const ck = String(code).trim().toUpperCase(); if (ck) storeByCode[ck] = pct; }
   }
-  const result = {};
-  for (const [tsh, vals] of Object.entries(tshMap)) result[tsh] = (vals.reduce((a,b)=>a+b,0)/vals.length)*100;
-  return result;
+  const tshAvg = {};
+  for (const [tsh, vals] of Object.entries(tshMap)) tshAvg[tsh] = vals.reduce((a,b)=>a+b,0)/vals.length;
+  return { tshAvg, storeByCode };
 }
 
 // ─── UPLOAD KE SUPABASE ──────────────────────────────────────
-async function uploadToSupabase(records, periodLabel, periodStart, periodEnd, log) {
+async function uploadToSupabase(records, periodLabel, periodStart, periodEnd, log, storeByCode = {}) {
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
   const { data: prevActive } = await supabase.from('upload_history').select('id').eq('is_active', true);
@@ -260,8 +263,9 @@ async function uploadToSupabase(records, periodLabel, periodStart, periodEnd, lo
   const { data: upload, error: uploadErr } = await supabase
     .from('upload_history')
     .insert({
-      filename:     `gas_sync_${new Date().toISOString().split('T')[0]}.xlsx`,
-      period_label: periodLabel, period_start: periodStart, period_end: periodEnd, is_active: true,
+      filename:        `gas_sync_${new Date().toISOString().split('T')[0]}.xlsx`,
+      period_label:    periodLabel, period_start: periodStart, period_end: periodEnd,
+      is_active:       true, store_ach_data: storeByCode,
     })
     .select().single();
 
