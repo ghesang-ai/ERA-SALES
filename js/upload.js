@@ -213,13 +213,13 @@ function parseExcel(file) {
       }
 
       // Baca ach_april dari sheet BY STORE kolom OT, agregasi per TSH
-      const tshAchMap = parseByStoreAchievement(wb);
+      const { tshAvg, storeByCode } = parseByStoreAchievement(wb);
 
       // Isi ach_april untuk TSH rows
       for (const rec of records) {
         if (rec.row_type === 'TSH') {
           const key = (rec.tsh_name || '').toUpperCase();
-          rec.ach_april = tshAchMap[key] != null ? tshAchMap[key] : null;
+          rec.ach_april = tshAvg[key] != null ? tshAvg[key] : null;
         }
       }
       // Untuk LOB rows: rata-rata ach_april dari TSH di bawahnya
@@ -240,7 +240,7 @@ function parseExcel(file) {
       const periodEnd   = allDates[allDates.length - 1] || null;
       const autoLabel   = periodLabel || (periodStart ? `Periode ${periodStart} s/d ${periodEnd}` : 'Periode tidak diketahui');
 
-      parsedData = { records, periodLabel: autoLabel, periodStart, periodEnd, filename: file.name };
+      parsedData = { records, periodLabel: autoLabel, periodStart, periodEnd, filename: file.name, storeAchData: storeByCode };
 
       renderPreview(records, autoLabel);
 
@@ -459,12 +459,13 @@ function initSubmit() {
       const { data: upload, error: uploadErr } = await supabaseClient
         .from('upload_history')
         .insert({
-          filename:     parsedData.filename,
-          period_label: parsedData.periodLabel,
-          period_start: parsedData.periodStart,
-          period_end:   parsedData.periodEnd,
-          uploaded_by:  user.id,
-          is_active:    true
+          filename:        parsedData.filename,
+          period_label:    parsedData.periodLabel,
+          period_start:    parsedData.periodStart,
+          period_end:      parsedData.periodEnd,
+          uploaded_by:     user.id,
+          is_active:       true,
+          store_ach_data:  parsedData.storeAchData
         })
         .select()
         .single();
@@ -657,12 +658,13 @@ async function loadUserList() {
   `).join('');
 }
 
-// ─── BY STORE: Ach per TSH ───────────────────────────────────
+// ─── BY STORE: Ach per TSH & per Store ──────────────────────
 // Membaca sheet BY STORE, mengambil kolom OX (index 413, 0-based)
 // "Ach %" per toko lalu agregasi rata-rata per TSH
+// Returns { tshAvg: {TSH_NAME_UPPER: avgAchPct}, storeByCode: {STORE_CODE_UPPER: achPct} }
 function parseByStoreAchievement(wb) {
   const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'BY STORE');
-  if (!sheetName || !wb.Sheets[sheetName]) return {};
+  if (!sheetName || !wb.Sheets[sheetName]) return { tshAvg: {}, storeByCode: {} };
 
   const ws = wb.Sheets[sheetName];
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
@@ -670,7 +672,8 @@ function parseByStoreAchievement(wb) {
   // ── Cari indeks kolom OX (Ach %) secara otomatis dari header ──
   // Fallback ke index 413 (kolom OX, 0-based) jika header tidak ditemukan
   const FALLBACK_OX = 413;
-  const TSH_COL = 4;  // Kolom TSH (0-based index, kolom E)
+  const TSH_COL  = 4;  // Kolom TSH (0-based index, kolom E)
+  const CODE_COL = 6;  // Kolom Store Code (0-based index, kolom G)
 
   // Cari baris header (baris 0–4) yang mengandung kata "ach" dan "%"
   let achCol = -1;
@@ -689,30 +692,43 @@ function parseByStoreAchievement(wb) {
   const OX_COL = achCol >= 0 ? achCol : FALLBACK_OX;
 
   // Mulai dari baris ke-4 (index 3) — skip 3 header rows
-  const tshMap = {};
+  const tshMap     = {};
+  const storeByCode = {};
   for (let i = 3; i < raw.length; i++) {
     const row = raw[i];
     if (!row) continue;
-    const tsh = row[TSH_COL];
-    const val = row[OX_COL];
+    const tsh  = row[TSH_COL];
+    const code = row[CODE_COL];
+    const val  = row[OX_COL];
     if (!tsh || val === null || val === undefined) continue;
     const tshKey = String(tsh).trim().toUpperCase();
     if (!tshKey || tshKey === 'TSH') continue;
     const num = parseFloat(val);
     if (isNaN(num) || num === 0) continue;
+
+    // Agregasi per TSH
     if (!tshMap[tshKey]) tshMap[tshKey] = [];
     tshMap[tshKey].push(num);
+
+    // ACH% per store code
+    if (code) {
+      const codeKey = String(code).trim().toUpperCase();
+      if (codeKey) {
+        // Konversi ke persen: 0.91 → 91% | 91 → 91%
+        storeByCode[codeKey] = Math.abs(num) <= 2 ? num * 100 : num;
+      }
+    }
   }
 
   // Hitung rata-rata dan konversi ke persen
   // Nilai Excel percentage cell (raw:true) berupa desimal: 0.91 → 91%
   // Guard: jika nilai sudah > 2 anggap sudah dalam persen, tidak perlu * 100
-  const result = {};
+  const tshAvg = {};
   for (const [tsh, vals] of Object.entries(tshMap)) {
     const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    result[tsh] = Math.abs(avg) <= 2 ? avg * 100 : avg; // 0.91 → 91% | 91 → 91%
+    tshAvg[tsh] = Math.abs(avg) <= 2 ? avg * 100 : avg; // 0.91 → 91% | 91 → 91%
   }
-  return result;
+  return { tshAvg, storeByCode };
 }
 
 // ─── ERROR HELPER ────────────────────────────────────────────
