@@ -48,16 +48,8 @@
   <script src="js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        const user = await getCurrentUser();
-        if (user && (user.profile?.status === 'approved' || user.profile?.role === 'admin')) {
-          window.location.href = 'dashboard.html'; return;
-        }
-        if (user && user.profile?.status === 'pending') {
-          window.location.href = 'pending.html'; return;
-        }
-      }
+      // Public mode — langsung redirect ke dashboard tanpa login
+      window.location.href = 'dashboard.html'; return;
 
       const sendBtn    = document.getElementById('send-btn');
       const backBtn    = document.getElementById('back-btn');

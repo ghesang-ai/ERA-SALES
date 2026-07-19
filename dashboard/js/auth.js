@@ -39,21 +39,8 @@ async function getCurrentUser() {
 // Guard: hanya user approved atau admin yang bisa lihat dashboard
 // Mode login dikontrol Admin via toggle di Panel Admin → Pengaturan
 async function requireApproved() {
-  if (localStorage.getItem('era_login_required') === 'off') {
-    return { id: 'preview', email: 'preview@erasales.local', profile: { role: 'admin', status: 'approved', full_name: 'Preview Mode' } };
-  }
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) { window.location.href = 'index.html'; return null; }
-
-  const user = await getCurrentUser();
-  if (!user) { window.location.href = 'index.html'; return null; }
-
-  if (user.profile?.role === 'admin' || user.profile?.status === 'approved') return user;
-
-  if (user.profile?.status === 'pending') { window.location.href = 'pending.html'; return null; }
-
-  window.location.href = 'index.html';
-  return null;
+  // Public mode — semua orang bisa akses tanpa login
+  return { id: 'public', email: 'public@erasales.local', profile: { role: 'viewer', status: 'approved', full_name: 'Guest' } };
 }
 
 // Guard: hanya admin yang boleh masuk ke panel admin
